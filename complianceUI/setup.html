@@ -7,6 +7,33 @@
     <link rel="stylesheet" href="/static/public/css/styles.css">
     <link rel="stylesheet" href="/static/public/css/setup.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .tool-link {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            margin-right: 1rem;
+            background-color: #f1f3f4;
+            color: #5f6368;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .tool-link:hover {
+            background-color: #e8eaed;
+            color: #4285F4;
+        }
+        .tool-link i {
+            margin-right: 0.5rem;
+            color: #4285F4;
+        }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+        }
+    </style>
 </head>
 <body>
     <div class="setup-container">
@@ -14,6 +41,12 @@
             <div class="logo">
                 <img src="https://cdn.brandfetch.io/complianceai.com/w/400/h/400?c=1idIzgASg8ZjevSrwdY" alt="ComplianceAI Logo">
                 <span>ComplianceAI Agent Setup</span>
+            </div>
+            <div class="header-actions">
+                <a href="/fast_analyze.html" class="tool-link">
+                    <i class="fas fa-bolt"></i>
+                    Fast Analyzer
+                </a>
             </div>
         </div>
 
@@ -173,7 +206,7 @@
             <!-- Step 3: Integration Hub -->
             <div class="setup-step" id="step-3">
                 <h2>Connect Your Tools</h2>
-                <p class="step-description">Integrate with your existing security and compliance tools (based on your provided documentation)</p>
+                <p class="step-description">Integrate with your existing security and compliance tools (<strong>based on your provided documentation)</strong></p>
                 
                 <div class="integration-grid">
                     <div class="integration-card" data-service="aws">

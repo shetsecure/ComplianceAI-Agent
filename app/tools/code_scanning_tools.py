@@ -1,10 +1,7 @@
-import os
+
 import re
 from langchain_core.tools import tool
 from typing import List, Dict
-import ast
-import json
-import github_tools
 
 @tool
 def scan_for_secrets(code_content: str) -> Dict:
