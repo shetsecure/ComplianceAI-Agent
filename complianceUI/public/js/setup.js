@@ -7,16 +7,53 @@ document.addEventListener('DOMContentLoaded', () => {
     const dropZone = document.getElementById('dropZone');
     const fileInput = document.getElementById('fileInput');
     const previewList = document.getElementById('previewList');
+    const regulationCards = document.querySelectorAll('.regulation-card');
     
     // State
     let currentStep = 1;
     const totalSteps = steps.length;
     const uploadedFiles = new Map();
+    
+    // Hardcoded norm for demo
+    let selectedNorm = "guide_hygiene_informatique_anssi.pdf";
+
+    // Automatically select ANSSI card if it exists
+    const anssiCard = document.querySelector('.regulation-card[data-framework="anssi"]');
+    if (anssiCard) {
+        // Deselect all cards
+        regulationCards.forEach(c => c.classList.remove('selected'));
+        // Select ANSSI card
+        anssiCard.classList.add('selected');
+        console.log('Automatically selected norm:', selectedNorm);
+    }
+
+    // Simplified norm loading - just for visual consistency
+    async function loadAvailableNorms() {
+        try {
+            const response = await fetch('/norms');
+            const data = await response.json();
+            
+            if (data.norms && data.norms.length > 0) {
+                console.log('Available norms:', data.norms);
+            }
+        } catch (error) {
+            console.error('Error loading norms:', error);
+        }
+    }
+
+    // Call on page load
+    loadAvailableNorms();
 
     // Navigation Functions
     function updateNavigation() {
         prevButton.disabled = currentStep === 1;
         nextButton.textContent = currentStep === totalSteps ? 'Complete Setup' : 'Next';
+        
+        // For demo, we can potentially skip step 1 since norm is hardcoded
+        // Uncomment this to skip directly to file upload
+        // if (currentStep === 1) {
+        //     showStep(2);
+        // }
         
         // Update progress steps
         progressSteps.forEach((step, index) => {
@@ -60,18 +97,34 @@ document.addEventListener('DOMContentLoaded', () => {
             showStep(currentStep + 1);
         } else {
             // Handle finish
-            alert('Setup completed!');
+            startAnalysis();
         }
+    });
+
+    // Disable norm selection since it's hardcoded
+    regulationCards.forEach(card => {
+        card.addEventListener('click', () => {
+            // Show card as selected for visual feedback only
+            regulationCards.forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            
+            // But keep using the hardcoded norm
+            console.log('Using hardcoded norm:', selectedNorm);
+        });
     });
 
     // File Upload Handling
     function handleFiles(files) {
-        Array.from(files).forEach(file => {
-            if (!uploadedFiles.has(file.name)) {
-                uploadedFiles.set(file.name, file);
-                addFileToPreview(file);
-            }
-        });
+        // Clear previous files
+        uploadedFiles.clear();
+        previewList.innerHTML = '';
+        
+        // Add the new file (only use the first file)
+        if (files.length > 0) {
+            const file = files[0];
+            uploadedFiles.set(file.name, file);
+            addFileToPreview(file);
+        }
     }
 
     function addFileToPreview(file) {
@@ -152,6 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 statusIndicator.classList.add('connected');
                 statusIndicator.classList.remove('disconnected');
                 statusText.textContent = 'Connected';
+                card.classList.add('connected');
             }, 1500);
         });
     });
@@ -165,16 +219,68 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Function to handle setup completion
-    function completeSetup() {
-        // Show completion message
+    // Start Analysis Process
+    async function startAnalysis() {
+        if (!validateSetup()) {
+            return false;
+        }
+        
+        showCompletionMessage("Uploading and analyzing your documents...");
+        
+        try {
+            // First, upload the PSSI file
+            const pssiFile = Array.from(uploadedFiles.values())[0];
+            if (!pssiFile) {
+                throw new Error("No PSSI file selected");
+            }
+            
+            const formData = new FormData();
+            formData.append('pssi', pssiFile);
+            
+            const uploadResponse = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (!uploadResponse.ok) {
+                throw new Error("Error uploading PSSI document");
+            }
+            
+            const uploadData = await uploadResponse.json();
+            const pssiId = uploadData.pssi_id;
+            
+            // Then analyze the documents with hardcoded norm
+            const analysisFormData = new FormData();
+            analysisFormData.append('pssi_id', pssiId);
+            analysisFormData.append('norm_name', selectedNorm);
+            
+            const analysisResponse = await fetch('/analyze', {
+                method: 'POST',
+                body: analysisFormData
+            });
+            
+            if (!analysisResponse.ok) {
+                throw new Error("Error analyzing documents");
+            }
+            
+            // Redirect to results page
+            window.location.href = 'dashboard.html';
+            
+        } catch (error) {
+            console.error('Error in analysis process:', error);
+            showError("An error occurred during analysis: " + error.message);
+        }
+    }
+
+    // Show completion message
+    function showCompletionMessage(message) {
         const completionMessage = document.createElement('div');
         completionMessage.className = 'completion-message';
         completionMessage.innerHTML = `
             <div class="completion-content">
-                <i class="fas fa-check-circle"></i>
-                <h3>Setup Complete!</h3>
-                <p>Your ComplianceAI Agent is being configured...</p>
+                <i class="fas fa-cog fa-spin"></i>
+                <h3>Processing</h3>
+                <p>${message}</p>
             </div>
         `;
         document.body.appendChild(completionMessage);
@@ -201,7 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             .completion-content i {
                 font-size: 4rem;
-                color: #4CAF50;
+                color: #3498db;
                 margin-bottom: 1rem;
             }
             .completion-content h3 {
@@ -219,33 +325,34 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         `;
         document.head.appendChild(style);
+    }
 
-        // Redirect to loading page after 2 seconds
-        setTimeout(() => {
-            window.location.href = 'loading.html';
-        }, 2000);
+    // Show error message
+    function showError(message) {
+        const errorMessage = document.querySelector('.completion-message');
+        if (errorMessage) {
+            const content = errorMessage.querySelector('.completion-content');
+            content.innerHTML = `
+                <i class="fas fa-exclamation-circle" style="color: #e74c3c;"></i>
+                <h3>Error</h3>
+                <p>${message}</p>
+                <button id="errorCloseBtn" class="btn-primary" style="margin-top: 1rem;">Try Again</button>
+            `;
+            
+            document.getElementById('errorCloseBtn').addEventListener('click', () => {
+                errorMessage.remove();
+            });
+        }
     }
 
     // Function to validate setup completion
     function validateSetup() {
-        // Check if at least one regulation is selected
-        const selectedRegulations = document.querySelectorAll('.regulation-card.selected');
-        if (selectedRegulations.length === 0) {
-            alert('Please select at least one regulation framework.');
-            return false;
-        }
-
-        // Check if at least one policy file is uploaded
-        const uploadedFiles = document.querySelectorAll('.file-preview-item');
-        if (uploadedFiles.length === 0) {
-            alert('Please upload at least one policy document.');
-            return false;
-        }
-
-        // Check if at least one integration is connected
-        const connectedIntegrations = document.querySelectorAll('.integration-card.connected');
-        if (connectedIntegrations.length === 0) {
-            alert('Please connect at least one integration.');
+        // We don't need to check norm selection since it's hardcoded
+        
+        // Check if a policy file is uploaded
+        if (uploadedFiles.size === 0) {
+            alert('Please upload your PSSI document.');
+            showStep(2);
             return false;
         }
 
