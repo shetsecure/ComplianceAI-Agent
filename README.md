@@ -115,8 +115,6 @@ git submodule update --remote
 
 3. Ta-da! You deployed the app.
 
-
-
 ## Contribution Guidelines
 
 ### Contributing to the Main Repository
@@ -211,10 +209,10 @@ If uv encounters dependency resolution errors:
 
 ```bash
 # Try with more verbose output
-uv pip install -r requirements.txt --verbose
+uv sync --verbose
 
-# Or try installing dependencies one by one
-uv pip install <problematic-package>
+# Or try running uv init again
+uv init
 ```
 
 For additional issues, please check the GitHub Issues page or contact the maintainers.
