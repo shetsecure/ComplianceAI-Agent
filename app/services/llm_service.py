@@ -2,7 +2,8 @@ from langchain.chat_models import init_chat_model
 from typing import List, Any
 from app.tools.jira_tool import create_issue
 
-class LLMService:
+
+class PSSIAnalyzerAgent:
     def __init__(self, model_name: str = "deepseek-chat", temperature: float = 0):
         self.llm = init_chat_model(model_name, temperature=temperature)
     
@@ -39,6 +40,31 @@ class LLMService:
 
             For each compliance issue you find, create a Jira ticket using the create_issue tool.
             Make sure to provide a clear summary and detailed description for each issue.
+            """
+
+            prompt = f"""
+            You are a compliance expert analyzing PSSI documents against security norms. Follow these steps:
+
+            1. **Analyze Infrastructure** (use `analyze_infrastructure` tool first):
+            - Validate the PSSI document's infrastructure context.
+            - Identify technical gaps affecting compliance.
+
+            2. **Compliance Check**:
+            - Compare the PSSI document with the provided norm.
+            - Flag non-compliant issues.
+
+            3. **Create Tickets** (use `create_issue` tool):
+            - 1 ticket per non-compliant issue.
+            - Include: requirement, current state, recommendations.
+            - Set priority based on severity.
+
+            NORM DOCUMENT: {norm_text}
+            PSSI DOCUMENT: {pssi_text}
+
+            Provide:
+            - Compliance score (0-100)
+            - Infrastructure analysis summary
+            - Jira tickets for non-compliant items
             """
 
             response = llm_with_tools.invoke(prompt)

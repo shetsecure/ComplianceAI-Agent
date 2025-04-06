@@ -8,8 +8,10 @@ import uuid
 from datetime import datetime
 
 from app.services.pdf_service import extract_text_from_pdf
-from app.services.llm_service import LLMService
+from app.services.llm_service import PSSIAnalyzerAgent
 from app.tools.jira_tool import create_issue
+from app.tools.infra_agent import analyze_infrastructure
+
 
 # Create uploads directory if it doesn't exist
 UPLOAD_DIR = Path("uploads")
@@ -78,8 +80,8 @@ async def analyze_documents(norm_id: str = Form(...), pssi_id: str = Form(...)):
         pssi_text = extract_text_from_pdf(pssi_path)
 
         # Initialize LLM service and analyze
-        llm_service = LLMService()
-        tools = [create_issue]
+        llm_service = PSSIAnalyzerAgent()
+        tools = [create_issue, analyze_infrastructure]
         result = llm_service.analyze_documents(norm_text, pssi_text, tools)
 
         print(result)
