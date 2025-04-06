@@ -1,0 +1,46 @@
+name: Deploy Sphinx Documentation to GitHub Pages  
+on:  
+  push:  
+    branches: [main]  # Branch where your source code lives  
+
+jobs:  
+  build-and-deploy:  
+    runs-on: ubuntu-latest  
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:  
+      # Check out repository code  
+      - uses: actions/checkout@v4  
+
+      # Set up Python environment  
+      - uses: actions/setup-python@v5  
+        with:  
+          python-version: "3.x"  # Replace with your Python version  
+
+      # Install dependencies  
+      - name: Install Sphinx and theme  
+        run: |  
+          pip install sphinx sphinx_rtd_theme  # Add other dependencies (e.g., your project)
+
+      # Build Sphinx documentation  
+      - name: Build HTML docs  
+        run: |  
+          cd docs  # Adjust path if your docs are in a subfolder  
+          make html  # Generates HTML in `_build/html`
+
+      # Configure GitHub Pages
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+
+      # Upload the artifact from build
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: docs/_build/html  # Path to your built HTML files
+
+      # Deploy to GitHub Pages  
+      - name: Deploy to GitHub Pages  
+        id: deployment
+        uses: actions/deploy-pages@v2
