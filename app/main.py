@@ -10,7 +10,7 @@ from datetime import datetime
 from app.services.pdf_service import extract_text_from_pdf
 from app.agents.infra_agent import InfraAgent
 from app.agents.norm_agent import PSSIAnalyzerAgent
-from app.agents.orchestrator import ComplianceOrchestrator
+from app.agents.orchestrator import ComplianceOrchestrator, ReflectComplianceOrchestrator
 
 from app.tools.jira_tool import create_issue
 
@@ -117,6 +117,47 @@ async def analyze(policy: str = Form(...)):
     check_results = orchestrator.execute_checks(inspection_plan["checks"])
     
     return orchestrator.generate_report(check_results, inspection_plan["priority"])
+
+@app.post("/reflect_analyze")
+async def reflect_analyze(policy: str = Form(...)):
+    """
+    Analyze policy using the reflective agent-based orchestrator with planning and reflection capabilities.
+    """
+    try:
+        # Check policy size - estimate tokens (roughly 4 chars = 1 token)
+        estimated_tokens = len(policy) // 4
+        max_safe_tokens = 12000  # Safe limit for policy text
+        
+        if estimated_tokens > max_safe_tokens:
+            # Truncate with a notice
+            truncation_point = max_safe_tokens * 4
+            truncated_notice = "\n\n[NOTICE: Policy text was truncated to fit token limits. The analysis covers only the beginning portion.]"
+            policy = policy[:truncation_point] + truncated_notice
+            print(f"Policy text truncated from {estimated_tokens} to {max_safe_tokens} estimated tokens")
+            
+        orchestrator = ReflectComplianceOrchestrator()
+        results = orchestrator.orchestrate(policy)
+        
+        # Add info about text truncation if it occurred
+        if estimated_tokens > max_safe_tokens:
+            results["truncated"] = True
+            results["original_token_estimate"] = estimated_tokens
+            if "summary" in results:
+                results["summary"] = "**[TRUNCATED ANALYSIS]** " + results["summary"]
+                
+        return results
+    except Exception as e:
+        error_message = str(e)
+        print(f"Error in reflect_analyze: {error_message}")
+        
+        # Check for token limit errors
+        if "maximum context length" in error_message or "token" in error_message:
+            raise HTTPException(
+                status_code=413,
+                detail="Policy text is too large for processing. Please reduce size or use standard analysis."
+            )
+        
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/analyze")
 async def analyze_documents(pssi_id: str = Form(...), norm_name: str = Form(None)):
