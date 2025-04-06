@@ -28,7 +28,7 @@ jobs:
       - name: Build HTML docs  
         run: |  
           cd app/docs  # Adjust path if your docs are in a subfolder  
-          make _build/html  # Generates HTML in `_build/html`
+          make html  # Generates HTML in `_build/html`
 
       # Configure GitHub Pages
       - name: Setup Pages
