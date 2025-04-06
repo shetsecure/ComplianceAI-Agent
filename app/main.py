@@ -1,14 +1,16 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException, Form
+from fastapi import FastAPI, UploadFile, File, HTTPException, Form, Body, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from pathlib import Path
 import uuid
+import re
 from datetime import datetime
 
 from app.services.pdf_service import extract_text_from_pdf
 from app.agents.infra_agent import InfraAgent
 from app.agents.norm_agent import PSSIAnalyzerAgent
+from app.tools.jira_tool import create_issue
 
 
 # Create uploads directory if it doesn't exist
@@ -32,9 +34,32 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Middleware to handle page refreshes and direct URL access
+@app.middleware("http")
+async def handle_page_refreshes(request: Request, call_next):
+    # Get the path
+    path = request.url.path
+    
+    # List of HTML files we want to serve directly
+    html_files = ["dashboard.html", "report.html", "hitl.html", "loading.html"]
+    
+    # Check if it's a direct HTML file access (except for root/index)
+    if path != "/" and any(path.endswith(file) for file in html_files):
+        # Serve the file directly from complianceUI
+        file_path = path.strip("/")
+        return FileResponse(f"complianceUI/{file_path}")
+    
+    # Continue with normal request processing
+    response = await call_next(request)
+    return response
+
 @app.get("/")
 async def root():
     return FileResponse("complianceUI/setup.html")
+
+@app.get("/dashboard.html")
+async def dashboard():
+    return FileResponse("complianceUI/dashboard.html")
 
 @app.get("/norms")
 async def get_available_norms():
@@ -117,14 +142,183 @@ async def analyze_documents(pssi_id: str = Form(...), norm_name: str = Form(None
         # Analyze infrastructure
         infra_result = infra_agent.analyze_infrastructure(pssi_text)
 
-        # Return combined results
-        return {
-            "infrastructure_analysis": infra_result,
-            "document_analysis": doc_result,
+        print("Document Analysis Result:", doc_result)
+        print("Infrastructure Analysis Result:", infra_result)
+
+        # Pre-process results to extract structured data for the dashboard
+        processed_results = {
+            "document_analysis": {
+                "raw": doc_result,
+                "processed": extract_structured_data(doc_result)
+            },
+            "infrastructure_analysis": {
+                "raw": infra_result,
+                "processed": extract_structured_data(infra_result)
+            }
         }
+
+        return processed_results
 
     except Exception as e:
         print(e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+def extract_structured_data(result):
+    """
+    Extract structured data from analysis results for easier frontend consumption
+    """
+    if not result or not isinstance(result, dict):
+        return {
+            "score": 0,
+            "tickets": [],
+            "issues": []
+        }
+    
+    analysis_text = result.get("analysis", "")
+    
+    # Extract score from analysis text
+    score = 70  # Default score
+    score_patterns = [
+        r'compliance\s+score:?\s*\*\*\s*(\d+)(?:\/100|\s*%)',
+        r'#+\s*compliance\s+score:?\s*\**\s*(\d+)(?:\/100|\s*%)',
+        r'\b(?:compliance\s+score|score)\s*:?\s*(\d+)(?:\s*%|\s*\/\s*100)?',
+        r'\b(?:compliance)\s+(?:is|of)\s*:?\s*(\d+)(?:\s*%|\s*\/\s*100)?',
+        r'\bscore\s+of\s+(\d+)(?:\s*%)?(?:\s+out\s+of\s+100)?',
+        r'\bcompliance\s+of\s+(\d+)(?:\s*%|\s*\/\s*100)?',
+        r'\b(\d+)(?:\s*%|\s*\/\s*100)\s+compliant'
+    ]
+    
+    for pattern in score_patterns:
+        matches = re.search(pattern, analysis_text, re.IGNORECASE)
+        if matches and matches.group(1):
+            score = int(matches.group(1))
+            break
+    
+    # Extract tickets from analysis text
+    tickets = []
+    ticket_pattern = r'(?:Ticket|Issue|Item)\s+\d+:?\s*\*\*([^*]+)\*\*'
+    ticket_matches = re.finditer(ticket_pattern, analysis_text, re.IGNORECASE)
+    
+    for match in ticket_matches:
+        ticket_title = match.group(1).strip()
+        start_pos = match.start()
+        
+        # Find next ticket or section
+        next_ticket = analysis_text.find("Ticket", start_pos + 1)
+        next_section = analysis_text.find("---", start_pos + 1)
+        end_pos = min(
+            next_ticket if next_ticket > -1 else float('inf'),
+            next_section if next_section > -1 else float('inf'),
+            len(analysis_text)
+        )
+        
+        ticket_text = analysis_text[start_pos:end_pos]
+        
+        # Extract description
+        desc_pattern = r'-\s*\*\*Description\*\*:\s*([^\n]+)'
+        desc_match = re.search(desc_pattern, ticket_text, re.IGNORECASE)
+        description = desc_match.group(1).strip() if desc_match else "No description provided"
+        
+        # Extract priority
+        priority_pattern = r'-\s*\*\*Priority\*\*:\s*(High|Medium|Low)'
+        priority_match = re.search(priority_pattern, ticket_text, re.IGNORECASE)
+        priority = priority_match.group(1).lower() if priority_match else "medium"
+        
+        tickets.append({
+            "title": ticket_title,
+            "description": description,
+            "severity": priority,
+            "auto_remediate": priority != "high"
+        })
+    
+    # Extract security issues (for infrastructure analysis)
+    issues = []
+    
+    # Look for "Security Risk" markers
+    if "Security Risk" in analysis_text:
+        risk_lines = [line for line in analysis_text.split('\n') if "Security Risk" in line]
+        for line in risk_lines:
+            issue_match = re.search(r'\*\*([^:*]+)\*\*:\s*([^(]+)', line)
+            if issue_match and issue_match.groups():
+                issue_type = issue_match.group(1).strip()
+                issue_value = issue_match.group(2).strip()
+                
+                issues.append({
+                    "title": f"Security Risk: {issue_type}",
+                    "description": f"{issue_type}: {issue_value} poses a security risk",
+                    "severity": "high",
+                    "auto_remediate": True
+                })
+    
+    # Look for compliance issues section
+    compliance_section = analysis_text.find("Key Compliance Issues:")
+    if compliance_section > -1:
+        section_text = analysis_text[compliance_section:]
+        issue_pattern = r'\d+\.\s+\*\*([^*]+)\*\*:'
+        for match in re.finditer(issue_pattern, section_text):
+            issue_title = match.group(1).strip()
+            start_pos = match.start()
+            
+            # Get description text
+            end_pos = section_text.find("\n\n", start_pos + 1)
+            if end_pos == -1:
+                end_pos = len(section_text)
+            
+            issue_text = section_text[start_pos:end_pos]
+            description = issue_text[issue_text.find(':') + 1:].strip()
+            
+            issues.append({
+                "title": issue_title,
+                "description": description,
+                "severity": "high" if any(term in issue_title.lower() for term in ["critical", "encryption", "password", "authentication"]) else "medium",
+                "auto_remediate": False
+            })
+    
+    # If we have tools calls, extract them too
+    tool_calls = result.get("tool_calls", [])
+    for call in tool_calls:
+        if call.get("name") == "create_issue":
+            args = call.get("args", {})
+            if isinstance(args, str):
+                try:
+                    import json
+                    args = json.loads(args)
+                except:
+                    args = {"summary": args, "description": args}
+            
+            summary = args.get("summary", "Unknown Issue")
+            description = args.get("description", "No description provided")
+            
+            tickets.append({
+                "title": summary,
+                "description": description,
+                "severity": "high" if any(term in summary.lower() for term in ["critical", "encryption", "password", "authentication"]) else "medium",
+                "auto_remediate": False
+            })
+    
+    return {
+        "score": score,
+        "tickets": tickets,
+        "issues": issues
+    }
+
+@app.post("/create-ticket")
+async def create_jira_ticket(data: dict = Body(...)):
+    try:
+        summary = data.get("summary", "")
+        description = data.get("description", "")
+        
+        if not summary or not description:
+            return JSONResponse(
+                status_code=400,
+                content={"detail": "Summary and description are required"}
+            )
+        
+        result = create_issue.invoke({"summary": summary, "description": description})
+        return {"message": "Ticket created successfully", "result": result}
+    
+    except Exception as e:
+        print(f"Error creating ticket: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":

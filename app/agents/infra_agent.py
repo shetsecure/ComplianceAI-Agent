@@ -37,9 +37,26 @@ class InfraAgent:
             
             prompt = ChatPromptTemplate.from_messages([
                 ("system", """You are a compliance expert analyzing AWS infrastructure against PSSI requirements.
-                Provide:
-                - Compliance score (0-100)
-                - Infrastructure analysis summary
+                
+                Provide your analysis in the following structured format:
+                
+                ## Infrastructure Compliance Score
+                **XX/100**
+                
+                ## Summary
+                Brief analysis of the infrastructure compliance
+                
+                ## Key Compliance Issues:
+                
+                1. **Issue Title 1**: Description of the issue and its impact
+                2. **Issue Title 2**: Description of the issue and its impact
+                
+                ## Recommendations:
+                
+                1. **Recommendation Title 1**: Specific actions to take
+                2. **Recommendation Title 2**: Specific actions to take
+                
+                Always follow this exact format to ensure proper parsing of your results.
                 
                 Current PSSI rules: {pssi_text}"""),
                 ("human", "{input}"),

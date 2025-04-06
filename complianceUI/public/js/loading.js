@@ -26,8 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     // Animation timing
-    const totalDuration = 7000; // 7 seconds
-    const messageInterval = 1200; // Change message every 1.2 seconds
+    const totalDuration = 90000; // 7 seconds
+    const messageInterval = 8500; // Change message every 1.2 seconds
     const factInterval = 2000; // Change fact every 2 seconds
     const statusCheckInterval = 1500; // Check status every 1.5 seconds
 
@@ -35,6 +35,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentMessageIndex = 0;
     let currentFactIndex = 0;
     let currentStatusIndex = 0;
+
+    // Get analysis ID from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const pssiId = urlParams.get('pssi_id');
+    const normName = urlParams.get('norm_name');
 
     // Update progress bar
     function updateProgress() {
@@ -77,11 +82,47 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Fetch analysis results
+    async function fetchAnalysisResults() {
+        try {
+            const formData = new FormData();
+            formData.append('pssi_id', pssiId);
+            if (normName) {
+                formData.append('norm_name', normName);
+            }
+
+            const response = await fetch('/analyze', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error(`Analysis failed: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            console.log('Analysis results:', data);
+            
+            // Store results in session storage
+            sessionStorage.setItem('analysisResults', JSON.stringify(data));
+            
+            return data;
+        } catch (error) {
+            console.error('Error fetching analysis results:', error);
+            return null;
+        }
+    }
+
     // Start animations
     updateProgress();
     setInterval(updateMessage, messageInterval);
     setInterval(updateFact, factInterval);
     setInterval(updateStatus, statusCheckInterval);
+
+    // If we have an analysis ID, fetch results
+    if (pssiId) {
+        fetchAnalysisResults();
+    }
 
     // Redirect after loading
     setTimeout(() => {

@@ -3,10 +3,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const lastUpdated = document.getElementById('lastUpdated');
     const refreshButton = document.getElementById('refreshButton');
     const heatmapContainer = document.getElementById('heatmap');
+    const scorecardGrid = document.querySelector('.scorecard-grid');
+    const uncertaintyGrid = document.querySelector('.uncertainty-grid');
+    const remediationGrid = document.querySelector('.remediation-grid');
 
     // State
-    let autoRefreshInterval;
-    const refreshInterval = 60000; // 60 seconds
+    let analysisData = null;
+    let lastAnalysisTime = null;
+    let autoRefreshInterval = null;
+    const refreshInterval = 300000; // 5 minutes
+
+    // Debug flag
+    const DEBUG = true;
+
+    // Debug logger
+    function logDebug(...args) {
+        if (DEBUG) {
+            console.log('[Dashboard]', ...args);
+        }
+    }
 
     // Alerts functionality
     const alertsFeed = document.getElementById('alertsFeed');
@@ -42,12 +57,322 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     // Initialize
-    initializeHeatmap();
+    fetchAnalysisResults();
     startAutoRefresh();
     setupEventListeners();
 
     // Functions
-    function initializeHeatmap() {
+    async function fetchAnalysisResults() {
+        try {
+            // Get the latest analysis results from session storage
+            const sessionData = sessionStorage.getItem('analysisResults');
+            
+            if (!sessionData) {
+                logDebug('No analysis data found in session storage');
+                // For development, create some sample data
+                if (DEBUG) {
+                    analysisData = createSampleData();
+                    updateDashboard(analysisData);
+                }
+                return;
+            }
+            
+            logDebug('Analysis data found in session storage');
+            analysisData = JSON.parse(sessionData);
+            logDebug('Parsed data:', analysisData);
+            
+            lastAnalysisTime = new Date();
+            
+            // Update the UI with the fetched data
+            updateDashboard(analysisData);
+            
+            // Update last updated time
+            lastUpdated.textContent = 'Just now';
+        } catch (error) {
+            console.error('Error fetching analysis results:', error);
+        }
+    }
+
+    function createSampleData() {
+        return {
+            document_analysis: {
+                raw: {
+                    status: "completed",
+                    analysis: "Based on my analysis, the PSSI document has a compliance score of 78% with the ANSSI Hygiene Guide."
+                },
+                processed: {
+                    score: 78,
+                    tickets: [
+                        {
+                            title: "Missing encryption requirement",
+                            description: "The PSSI does not specify encryption requirements.",
+                            severity: "high",
+                            auto_remediate: false
+                        }
+                    ],
+                    issues: []
+                }
+            },
+            infrastructure_analysis: {
+                raw: {
+                    status: "completed",
+                    analysis: "The infrastructure compliance score is 65% based on AWS configurations."
+                },
+                processed: {
+                    score: 65,
+                    tickets: [],
+                    issues: [
+                        {
+                            title: "S3 Bucket Misconfiguration",
+                            description: "S3 buckets should have server-side encryption enabled",
+                            severity: "medium",
+                            auto_remediate: true
+                        }
+                    ]
+                }
+            }
+        };
+    }
+
+    function updateDashboard(data) {
+        if (!data) {
+            logDebug('No data to update dashboard');
+            return;
+        }
+        
+        logDebug('Updating dashboard with data:', data);
+        
+        // Extract data from infrastructure and document analysis
+        const docAnalysis = data.document_analysis || {};
+        const infraAnalysis = data.infrastructure_analysis || {};
+        
+        // Clear existing content
+        scorecardGrid.innerHTML = '';
+        uncertaintyGrid.innerHTML = '';
+        remediationGrid.innerHTML = '';
+        
+        // Update dashboard components with processed data
+        updateComplianceScorecard(docAnalysis, infraAnalysis);
+        updateUncertaintyFlags(docAnalysis, infraAnalysis);
+        updateRemediationActions(docAnalysis, infraAnalysis);
+        initializeHeatmap(data);
+    }
+    
+    function updateComplianceScorecard(docAnalysis, infraAnalysis) {
+        // Get scores from processed data
+        const docScore = docAnalysis.processed ? docAnalysis.processed.score : 0;
+        const infraScore = infraAnalysis.processed ? infraAnalysis.processed.score : 0;
+        
+        logDebug('Scores - Doc:', docScore, 'Infra:', infraScore);
+        
+        // Create scorecards
+        const frameworks = [
+            {
+                id: 'anssi',
+                name: 'ANSSI Hygiene',
+                score: docScore,
+                violations: docAnalysis.processed ? 
+                    (docAnalysis.processed.tickets.length || 0) : 0
+            },
+            {
+                id: 'infra',
+                name: 'Infrastructure',
+                score: infraScore,
+                violations: infraAnalysis.processed ? 
+                    (infraAnalysis.processed.issues.length || 0) : 0
+            }
+        ];
+        
+        frameworks.forEach(framework => {
+            const card = createScorecardElement(framework);
+            scorecardGrid.appendChild(card);
+        });
+    }
+
+    function createScorecardElement(framework) {
+        const scoreCardDiv = document.createElement('div');
+        scoreCardDiv.className = 'scorecard';
+        scoreCardDiv.dataset.framework = framework.id;
+        
+        // Set color based on score
+        const scoreColor = framework.score >= 80 ? '#4CAF50' : 
+                          framework.score >= 60 ? '#FFC107' : '#F44336';
+        
+        scoreCardDiv.innerHTML = `
+            <div class="score-header">
+                <h3>${framework.name}</h3>
+                <div class="score-value" data-score="${framework.score}" style="background: ${scoreColor}; color: ${framework.score >= 60 && framework.score < 80 ? '#333' : 'white'}">
+                    ${framework.score}%
+                </div>
+            </div>
+            <div class="score-details">
+                <div class="violations">
+                    <span class="label">Policy Violations:</span>
+                    <span class="value">${framework.violations}</span>
+                </div>
+                <button class="drill-down-button">View Details</button>
+            </div>
+        `;
+        
+        return scoreCardDiv;
+    }
+    
+    function updateUncertaintyFlags(docAnalysis, infraAnalysis) {
+        // Extract uncertainty flags - in a real implementation, these would come from processed data
+        // For now, let's generate some based on the scores
+        const docScore = docAnalysis.processed ? docAnalysis.processed.score : 0;
+        const infraScore = infraAnalysis.processed ? infraAnalysis.processed.score : 0;
+        
+        const uncertainties = [];
+        
+        // If score is lower than 80, add an uncertainty flag
+        if (docScore < 80) {
+            uncertainties.push({
+                title: 'ANSSI Compliance Gap',
+                description: 'Some ANSSI requirements may not be properly addressed in the security policy',
+                confidence: 75
+            });
+        }
+        
+        if (infraScore < 70) {
+            uncertainties.push({
+                title: 'Infrastructure Security Gaps',
+                description: 'Infrastructure configurations may have security weaknesses that need addressing',
+                confidence: 85
+            });
+        }
+        
+        logDebug('Generated uncertainties:', uncertainties);
+        
+        uncertainties.forEach(uncertainty => {
+            const card = createUncertaintyElement(uncertainty);
+            uncertaintyGrid.appendChild(card);
+        });
+        
+        // If no uncertainties found, add a placeholder
+        if (uncertainties.length === 0) {
+            uncertaintyGrid.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-check-circle"></i>
+                    <p>No uncertainty flags detected</p>
+                </div>
+            `;
+        }
+    }
+    
+    function createUncertaintyElement(uncertainty) {
+        const card = document.createElement('div');
+        card.className = 'uncertainty-card';
+        
+        const confidenceColor = uncertainty.confidence >= 70 ? '#4CAF50' : 
+                               uncertainty.confidence >= 40 ? '#FFC107' : '#F44336';
+        
+        card.innerHTML = `
+            <div class="uncertainty-header">
+                <h3>${uncertainty.title}</h3>
+                <div class="confidence-score" data-confidence="${uncertainty.confidence}" 
+                     style="background: ${confidenceColor}; color: ${uncertainty.confidence >= 40 && uncertainty.confidence < 70 ? '#333' : 'white'}">
+                    ${uncertainty.confidence}%
+                </div>
+            </div>
+            <p class="uncertainty-description">
+                ${uncertainty.description}
+            </p>
+            <div class="uncertainty-actions">
+                <button class="review-button">
+                    <i class="fas fa-user-check"></i>
+                    Request Human Review
+                </button>
+                <button class="ignore-button">
+                    <i class="fas fa-times"></i>
+                    Ignore
+                </button>
+            </div>
+        `;
+        
+        return card;
+    }
+    
+    function updateRemediationActions(docAnalysis, infraAnalysis) {
+        // Get remediation actions from both document and infrastructure analyses
+        let remediation = [];
+        
+        // Add document analysis tickets
+        if (docAnalysis.processed && docAnalysis.processed.tickets) {
+            remediation = remediation.concat(
+                docAnalysis.processed.tickets.map(ticket => ({
+                    title: ticket.title,
+                    description: ticket.description,
+                    severity: ticket.severity,
+                    canAutoRemediate: ticket.auto_remediate
+                }))
+            );
+        }
+        
+        // Add infrastructure issues
+        if (infraAnalysis.processed && infraAnalysis.processed.issues) {
+            remediation = remediation.concat(
+                infraAnalysis.processed.issues.map(issue => ({
+                    title: issue.title,
+                    description: issue.description,
+                    severity: issue.severity,
+                    canAutoRemediate: issue.auto_remediate
+                }))
+            );
+        }
+        
+        logDebug('Remediation actions:', remediation);
+        
+        remediation.forEach(action => {
+            const card = createRemediationElement(action);
+            remediationGrid.appendChild(card);
+        });
+        
+        // If no remediation actions found, add a placeholder
+        if (remediation.length === 0) {
+            remediationGrid.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-check-circle"></i>
+                    <p>No remediation actions needed</p>
+                </div>
+            `;
+        }
+    }
+    
+    function createRemediationElement(action) {
+        const card = document.createElement('div');
+        card.className = 'remediation-card';
+        
+        card.innerHTML = `
+            <div class="remediation-header">
+                <h3>${action.title}</h3>
+                <div class="severity ${action.severity}">${action.severity}</div>
+            </div>
+            <p class="remediation-description">
+                ${action.description}
+            </p>
+            <div class="remediation-actions">
+                <div class="auto-remediation-toggle">
+                    <label class="toggle-switch">
+                        <input type="checkbox" ${action.canAutoRemediate ? 'checked' : ''}>
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span>Auto-remediate</span>
+                </div>
+                <button class="create-ticket-button" data-summary="${action.title}" data-description="${action.description}">
+                    <i class="fab fa-jira"></i>
+                    Create Jira Ticket
+                </button>
+            </div>
+        `;
+        
+        return card;
+    }
+    
+    function initializeHeatmap(data) {
+        // Clear existing content
+        heatmapContainer.innerHTML = '';
+        
         const margin = { top: 20, right: 20, bottom: 30, left: 40 };
         const width = heatmapContainer.clientWidth - margin.left - margin.right;
         const height = 300 - margin.top - margin.bottom;
@@ -60,18 +385,18 @@ document.addEventListener('DOMContentLoaded', () => {
             .append('g')
             .attr('transform', `translate(${margin.left},${margin.top})`);
 
-        // Generate sample data
-        const data = generateSampleData();
+        // Generate sample data based on real analysis
+        const heatmapData = generateHeatmapData(data);
 
         // Create scales
         const x = d3.scaleBand()
             .range([0, width])
-            .domain(data.map(d => d.framework))
+            .domain(heatmapData.map(d => d.framework))
             .padding(0.1);
 
         const y = d3.scaleBand()
             .range([height, 0])
-            .domain(data.map(d => d.date))
+            .domain(heatmapData.map(d => d.date))
             .padding(0.1);
 
         const color = d3.scaleLinear()
@@ -80,7 +405,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Create heatmap cells
         svg.selectAll()
-            .data(data)
+            .data(heatmapData)
             .enter()
             .append('rect')
             .attr('x', d => x(d.framework))
@@ -103,127 +428,143 @@ document.addEventListener('DOMContentLoaded', () => {
             .call(d3.axisLeft(y));
     }
 
-    function generateSampleData() {
-        const frameworks = ['GDPR', 'ISO 27001', 'SOC2'];
+    function generateHeatmapData(data) {
+        // Extract scores from processed data
+        const docScore = data.document_analysis?.processed?.score || 0;
+        const infraScore = data.infrastructure_analysis?.processed?.score || 0;
+        
+        const frameworks = ['ANSSI', 'Infrastructure', 'Combined'];
         const dates = Array.from({ length: 7 }, (_, i) => {
             const date = new Date();
             date.setDate(date.getDate() - i);
             return date.toISOString().split('T')[0];
         });
 
-        return frameworks.flatMap(framework =>
-            dates.map(date => ({
-                framework,
-                date,
-                score: Math.floor(Math.random() * 100)
-            }))
+        // Create realistic data with last entry being the real score
+        return frameworks.flatMap(framework => 
+            dates.map((date, i) => {
+                let score;
+                if (i === 0) {
+                    // Today's data is the actual analysis score
+                    if (framework === 'ANSSI') score = docScore;
+                    else if (framework === 'Infrastructure') score = infraScore;
+                    else score = Math.round((docScore + infraScore) / 2);
+                } else {
+                    // Historical data is randomly generated
+                    const baseScore = framework === 'ANSSI' ? docScore : 
+                                     framework === 'Infrastructure' ? infraScore : 
+                                     Math.round((docScore + infraScore) / 2);
+                    
+                    // Vary by ±10 points for historical data
+                    score = Math.max(0, Math.min(100, baseScore + Math.floor(Math.random() * 20) - 10));
+                }
+                
+                return {
+                    framework,
+                    date,
+                    score
+                };
+            })
         );
     }
 
-    function updateDashboard() {
-        // Update last updated timestamp
-        lastUpdated.textContent = 'Just now';
-
-        // Simulate data refresh
-        const scorecards = document.querySelectorAll('.scorecard');
-        scorecards.forEach(card => {
-            const scoreElement = card.querySelector('.score-value');
-            const newScore = Math.floor(Math.random() * 100);
-            scoreElement.textContent = `${newScore}%`;
-            scoreElement.setAttribute('data-score', newScore);
-            
-            // Update color based on score
-            if (newScore >= 80) {
-                scoreElement.style.background = '#4CAF50';
-                scoreElement.style.color = 'white';
-            } else if (newScore >= 60) {
-                scoreElement.style.background = '#FFC107';
-                scoreElement.style.color = '#333';
-            } else {
-                scoreElement.style.background = '#F44336';
-                scoreElement.style.color = 'white';
-            }
-        });
-
-        // Update uncertainty scores
-        const confidenceScores = document.querySelectorAll('.confidence-score');
-        confidenceScores.forEach(score => {
-            const newScore = Math.floor(Math.random() * 100);
-            score.textContent = `${newScore}%`;
-            score.setAttribute('data-confidence', newScore);
-            
-            if (newScore >= 70) {
-                score.style.background = '#4CAF50';
-                score.style.color = 'white';
-            } else if (newScore >= 40) {
-                score.style.background = '#FFC107';
-                score.style.color = '#333';
-            } else {
-                score.style.background = '#F44336';
-                score.style.color = 'white';
-            }
-        });
-    }
-
     function startAutoRefresh() {
-        autoRefreshInterval = setInterval(updateDashboard, refreshInterval);
+        // Clear any existing interval first
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
+        }
+        autoRefreshInterval = setInterval(fetchAnalysisResults, refreshInterval);
     }
 
     function stopAutoRefresh() {
-        clearInterval(autoRefreshInterval);
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
+            autoRefreshInterval = null;
+        }
     }
 
     function setupEventListeners() {
         // Manual refresh button
         refreshButton.addEventListener('click', () => {
-            updateDashboard();
+            fetchAnalysisResults();
         });
 
-        // Drill-down buttons
-        document.querySelectorAll('.drill-down-button').forEach(button => {
-            button.addEventListener('click', function() {
-                const card = this.closest('.scorecard');
+        // Event delegation for dynamic elements
+        document.addEventListener('click', (event) => {
+            // Drill-down buttons
+            if (event.target.classList.contains('drill-down-button') || 
+                event.target.parentElement.classList.contains('drill-down-button')) {
+                const button = event.target.classList.contains('drill-down-button') ? 
+                              event.target : event.target.parentElement;
+                const card = button.closest('.scorecard');
                 const framework = card.dataset.framework;
-                alert(`Showing detailed view for ${framework}`);
-            });
-        });
-
-        // Review buttons
-        document.querySelectorAll('.review-button').forEach(button => {
-            button.addEventListener('click', function() {
-                const card = this.closest('.uncertainty-card');
+                alert(`Showing detailed view for ${framework} framework`);
+            }
+            
+            // Review buttons
+            if (event.target.classList.contains('review-button') ||
+                event.target.parentElement.classList.contains('review-button')) {
+                const button = event.target.classList.contains('review-button') ? 
+                              event.target : event.target.parentElement;
+                const card = button.closest('.uncertainty-card');
                 const title = card.querySelector('h3').textContent;
                 alert(`Requesting human review for: ${title}`);
-            });
-        });
-
-        // Ignore buttons
-        document.querySelectorAll('.ignore-button').forEach(button => {
-            button.addEventListener('click', function() {
-                const card = this.closest('.uncertainty-card');
+            }
+            
+            // Ignore buttons
+            if (event.target.classList.contains('ignore-button') ||
+                event.target.parentElement.classList.contains('ignore-button')) {
+                const button = event.target.classList.contains('ignore-button') ? 
+                              event.target : event.target.parentElement;
+                const card = button.closest('.uncertainty-card');
                 card.style.opacity = '0.5';
                 setTimeout(() => card.remove(), 300);
-            });
+            }
+            
+            // Create ticket buttons
+            if (event.target.classList.contains('create-ticket-button') ||
+                event.target.parentElement.classList.contains('create-ticket-button')) {
+                const button = event.target.classList.contains('create-ticket-button') ? 
+                              event.target : event.target.parentElement;
+                const summary = button.dataset.summary;
+                const description = button.dataset.description;
+                
+                createJiraTicket(summary, description);
+            }
         });
-
-        // Create ticket buttons
-        document.querySelectorAll('.create-ticket-button').forEach(button => {
-            button.addEventListener('click', function() {
-                const card = this.closest('.remediation-card');
-                const title = card.querySelector('h3').textContent;
-                alert(`Creating Jira ticket for: ${title}`);
-            });
-        });
-
+        
         // Toggle switches
-        document.querySelectorAll('.toggle-switch input').forEach(toggle => {
-            toggle.addEventListener('change', function() {
-                const card = this.closest('.remediation-card');
-                const isEnabled = this.checked;
+        document.addEventListener('change', (event) => {
+            if (event.target.closest('.toggle-switch')) {
+                const toggle = event.target;
+                const card = toggle.closest('.remediation-card');
+                const isEnabled = toggle.checked;
                 const title = card.querySelector('h3').textContent;
                 console.log(`Auto-remediation ${isEnabled ? 'enabled' : 'disabled'} for: ${title}`);
-            });
+            }
         });
+    }
+    
+    async function createJiraTicket(summary, description) {
+        try {
+            const response = await fetch('/create-ticket', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ summary, description })
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                alert(`Ticket created successfully: ${result.key || result.result}`);
+            } else {
+                alert('Failed to create ticket');
+            }
+        } catch (error) {
+            console.error('Error creating ticket:', error);
+            alert('Error creating ticket');
+        }
     }
 
     // Alerts functionality

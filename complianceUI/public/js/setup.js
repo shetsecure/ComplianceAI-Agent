@@ -249,26 +249,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const uploadData = await uploadResponse.json();
             const pssiId = uploadData.pssi_id;
             
-            // Then analyze the documents with hardcoded norm
-            const analysisFormData = new FormData();
-            analysisFormData.append('pssi_id', pssiId);
-            analysisFormData.append('norm_name', selectedNorm);
+            // Instead of handling analysis here, redirect to the loading page
+            // with query parameters
+            window.location.href = `/loading.html?pssi_id=${encodeURIComponent(pssiId)}&norm_name=${encodeURIComponent(selectedNorm)}`;
             
-            const analysisResponse = await fetch('/analyze', {
-                method: 'POST',
-                body: analysisFormData
-            });
-            
-            if (!analysisResponse.ok) {
-                throw new Error("Error analyzing documents");
-            }
-            
-            // Redirect to results page
-            window.location.href = 'dashboard.html';
-            
+            return true;
         } catch (error) {
-            console.error('Error in analysis process:', error);
-            showError("An error occurred during analysis: " + error.message);
+            console.error("Error starting analysis:", error);
+            showError(`Error: ${error.message}`);
+            return false;
         }
     }
 

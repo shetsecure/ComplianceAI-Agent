@@ -49,12 +49,31 @@ class PSSIAnalyzerAgent:
                 - Recommendations for achieving compliance
                 4. Set appropriate priority based on the severity of non-compliance
                  
-                 Provide:
-                - Compliance score (0-100)
-                - Compliance analysis summary
-                - Jira tickets for non-compliant items
-                 
-                 In case you returned Jira tickets, do not ask for permission, always create them.
+                Provide your response in a specific structured format:
+                
+                ## Compliance Score
+                **XX/100**
+                
+                ## Summary
+                Brief summary of your findings
+                
+                ## Non-Compliant Items
+                
+                For each non-compliant item, create a ticket and format as:
+                
+                Ticket 1: **Title of the issue**
+                - **Description**: Description of the issue
+                - **Priority**: High/Medium/Low
+                
+                Ticket 2: **Title of another issue**
+                - **Description**: Description of the issue
+                - **Priority**: High/Medium/Low
+                
+                ## Recommendations
+                Add your recommendations for improving compliance
+                
+                Always follow this exact format to ensure proper parsing of your results.
+                In case you returned Jira tickets, do not ask for permission, always create them.
 
                 Please analyze the following PSSI document against the provided norm.
                 
@@ -85,25 +104,6 @@ class PSSIAnalyzerAgent:
                 {"callbacks": [handler]}
             )
             
-            # Process tool calls from intermediate steps
-            # processed_tool_calls = []
-            # for step in response.get("intermediate_steps", []):
-            #     for action in step:
-            #         if action.tool == "create_issue":
-            #             processed_tool_calls.append({
-            #                 "name": action.tool,
-            #                 "args": action.tool_input,
-            #                 "result": action.log
-            #             })
-            
-            # return {
-            #     "status": "completed",
-            #     "analysis": response["output"],
-            #     "tool_calls": processed_tool_calls,
-            #     "logs": handler.log,
-            #     "steps": response["intermediate_steps"]
-            # }
-
             processed_tool_calls = []
             for step in response.get("intermediate_steps", []):
                 # Each step is a tuple of (AgentAction, observation)
@@ -123,7 +123,7 @@ class PSSIAnalyzerAgent:
                 "analysis": response["output"],
                 "tool_calls": processed_tool_calls,
                 "logs": handler.log,
-                "steps": response["intermediate_steps"]
+                "steps": response.get("intermediate_steps", [])
             }
         except Exception as e:
             raise Exception(f"Error in PSSIAnalyzerAgent LLM analysis: {str(e)}")

@@ -4,10 +4,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ComplianceAI Agent - Dashboard</title>
-    <link rel="stylesheet" href="public/css/styles.css">
-    <link rel="stylesheet" href="public/css/dashboard.css">
+    <link rel="stylesheet" href="/static/public/css/styles.css">
+    <link rel="stylesheet" href="/static/public/css/dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        /* Additional styles for severity indicators */
+        .severity {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .severity.high {
+            background-color: #F44336;
+            color: white;
+        }
+        .severity.medium {
+            background-color: #FFC107;
+            color: #333;
+        }
+        .severity.low {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        /* Empty state styles */
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            color: #666;
+        }
+        .empty-state i {
+            font-size: 3rem;
+            color: #4CAF50;
+            margin-bottom: 1rem;
+        }
+    </style>
 </head>
 <body>
     <div class="dashboard-container">
@@ -201,6 +237,6 @@
         </main>
     </div>
 
-    <script src="public/js/dashboard.js"></script>
+    <script src="/static/public/js/dashboard.js"></script>
 </body>
 </html> 
