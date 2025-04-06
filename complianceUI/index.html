@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ComplianceAI Agent - Automated Compliance Verification</title>
+    <link rel="stylesheet" href="/static/public/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="navbar">
+            <div class="logo">
+                <img src="https://cdn.brandfetch.io/complianceai.com/w/400/h/400?c=1idIzgASg8ZjevSrwdY" alt="ComplianceAI Logo">
+                <span>ComplianceAI Agent</span>
+            </div>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#modules">Modules</a>
+                <a href="#integrations">Integrations</a>
+                <a href="#contact" class="cta-button">Contact Sales</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Automate Your Compliance Journey</h1>
+                <p>ComplianceAI Agent helps organizations achieve and maintain compliance with cybersecurity standards, regulations, and best practices.</p>
+                <div class="hero-buttons">
+                    <a href="#upload" class="primary-button">Start Analysis</a>
+                    <a href="#contact" class="secondary-button">Schedule Demo</a>
+                </div>
+            </div>
+        </section>
+
+        <section id="upload" class="upload-section">
+            <div class="container">
+                <h2>Document Analysis</h2>
+                <div class="upload-container">
+                    <div class="upload-box" id="norm-upload">
+                        <i class="fas fa-file-alt"></i>
+                        <h3>Upload Norm Document</h3>
+                        <p>Select the compliance standard or regulation document</p>
+                        <input type="file" id="norm-file" accept=".pdf,.txt,.doc,.docx">
+                        <label for="norm-file" class="upload-button">Choose File</label>
+                    </div>
+                    <div class="upload-box" id="pssi-upload">
+                        <i class="fas fa-shield-alt"></i>
+                        <h3>Upload PSSI Document</h3>
+                        <p>Select your organization's security policy document</p>
+                        <input type="file" id="pssi-file" accept=".pdf,.txt,.doc,.docx">
+                        <label for="pssi-file" class="upload-button">Choose File</label>
+                    </div>
+                </div>
+                <button id="analyze-button" class="analyze-button" disabled>Analyze Documents</button>
+                <div id="analysis-progress" class="analysis-progress hidden">
+                    <div class="progress-bar">
+                        <div class="progress"></div>
+                    </div>
+                    <p class="progress-text">Analyzing documents...</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="modules" class="modules-section">
+            <div class="container">
+                <h2>Available Compliance Modules</h2>
+                <div class="modules-grid">
+                    <div class="module-card">
+                        <img src="https://cdn.brandfetch.io/anssi.fr/w/400/h/400?c=1idIzgASg8ZjevSrwdY" alt="ANSSI">
+                        <h3>ANSSI</h3>
+                        <p>French National Agency for Information Systems Security</p>
+                    </div>
+                    <div class="module-card">
+                        <img src="https://cdn.brandfetch.io/gdpr.eu/w/400/h/400?c=1idIzgASg8ZjevSrwdY" alt="GDPR">
+                        <h3>GDPR</h3>
+                        <p>General Data Protection Regulation</p>
+                    </div>
+                    <div class="module-card">
+                        <img src="https://cdn.brandfetch.io/iso.org/w/400/h/400?c=1idIzgASg8ZjevSrwdY" alt="ISO 27001">
+                        <h3>ISO 27001</h3>
+                        <p>Information Security Management</p>
+                    </div>
+                    <div class="module-card">
+                        <img src="https://cdn.brandfetch.io/soc2.org/w/400/h/400?c=1idIzgASg8ZjevSrwdY" alt="SOC2">
+                        <h3>SOC2</h3>
+                        <p>Service Organization Control 2</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="integrations" class="integrations-section">
+            <div class="container">
+                <h2>Available Integrations</h2>
+                <div class="integrations-grid">
+                    <div class="integration-card">
+                        <img src="https://cdn.brandfetch.io/microsoft.com/w/400/h/400?c=1idIzgASg8ZjevSrwdY" alt="Microsoft">
+                        <h3>Microsoft Entra ID</h3>
+                        <div class="api-key-input">
+                            <input type="password" placeholder="Enter API Key">
+                            <button class="save-button">Save</button>
+                        </div>
+                    </div>
+                    <div class="integration-card">
+                        <img src="https://cdn.brandfetch.io/atlassian.com/w/400/h/400?c=1idIzgASg8ZjevSrwdY" alt="Jira">
+                        <h3>Jira</h3>
+                        <div class="api-key-input">
+                            <input type="password" placeholder="Enter API Key">
+                            <button class="save-button">Save</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="contact-section">
+            <div class="container">
+                <h2>Contact Our Sales Team</h2>
+                <div class="contact-form">
+                    <input type="text" placeholder="Company Name">
+                    <input type="email" placeholder="Email Address">
+                    <textarea placeholder="Tell us about your compliance needs"></textarea>
+                    <button class="submit-button">Send Message</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <img src="https://cdn.brandfetch.io/complianceai.com/w/400/h/400?c=1idIzgASg8ZjevSrwdY" alt="ComplianceAI Logo">
+                    <span>ComplianceAI Agent</span>
+                </div>
+                <div class="footer-links">
+                    <a href="#features">Features</a>
+                    <a href="#modules">Modules</a>
+                    <a href="#integrations">Integrations</a>
+                    <a href="#contact">Contact</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 ComplianceAI Agent. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/static/public/js/main.js"></script>
+</body>
+</html> 
