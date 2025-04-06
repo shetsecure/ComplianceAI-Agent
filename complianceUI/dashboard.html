@@ -43,6 +43,28 @@
             color: #4CAF50;
             margin-bottom: 1rem;
         }
+        
+        /* Tool link styles */
+        .tool-link {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            margin-right: 1rem;
+            background-color: #f1f3f4;
+            color: #5f6368;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .tool-link:hover {
+            background-color: #e8eaed;
+            color: #4285F4;
+        }
+        .tool-link i {
+            margin-right: 0.5rem;
+            color: #4285F4;
+        }
     </style>
 </head>
 <body>
@@ -54,6 +76,10 @@
                 <span>ComplianceAI Dashboard</span>
             </div>
             <div class="header-actions">
+                <a href="/fast_analyze.html" class="tool-link">
+                    <i class="fas fa-bolt"></i>
+                    Fast Analyzer
+                </a>
                 <div class="refresh-status">
                     <i class="fas fa-sync-alt"></i>
                     <span>Last updated: <span id="lastUpdated">Just now</span></span>

@@ -2,26 +2,9 @@ from app.tools.aws_tools import list_rds_instances, list_ec2_instances, list_s3_
 from langchain.chat_models import init_chat_model
 from langchain.agents import AgentExecutor, create_tool_calling_agent
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder 
-from langchain.callbacks.base import BaseCallbackHandler
+from app.models.capture_handlers import CustomCaptureHandler
 
-# Define the callback handler first
-class CustomCaptureHandler(BaseCallbackHandler):
-    def __init__(self):
-        self.log = []
-        
-    def on_chain_start(self, serialized, inputs, **kwargs):
-        try:
-            chain_name = serialized.get('id', ['unknown'])[-1] if serialized else 'unknown_chain'
-            self.log.append(f"Chain start: {chain_name}")
-        except Exception as e:
-            self.log.append(f"Chain start error: {str(e)}")
-        
-    def on_tool_start(self, serialized, input_str, **kwargs):
-        try:
-            tool_name = serialized.get('name', 'unnamed_tool') if serialized else 'unknown_tool'
-            self.log.append(f"Tool called: {tool_name}")
-        except Exception as e:
-            self.log.append(f"Tool start error: {str(e)}")
+
 
 tools = [list_rds_instances, list_ec2_instances, list_s3_buckets, list_ec2_volumes, list_ec2_security_groups]
 

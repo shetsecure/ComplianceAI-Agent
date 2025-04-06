@@ -10,6 +10,8 @@ from datetime import datetime
 from app.services.pdf_service import extract_text_from_pdf
 from app.agents.infra_agent import InfraAgent
 from app.agents.norm_agent import PSSIAnalyzerAgent
+from app.agents.orchestrator import ComplianceOrchestrator
+
 from app.tools.jira_tool import create_issue
 
 
@@ -41,7 +43,7 @@ async def handle_page_refreshes(request: Request, call_next):
     path = request.url.path
     
     # List of HTML files we want to serve directly
-    html_files = ["dashboard.html", "report.html", "hitl.html", "loading.html"]
+    html_files = ["dashboard.html", "report.html", "hitl.html", "loading.html", "fast_analyze.html"]
     
     # Check if it's a direct HTML file access (except for root/index)
     if path != "/" and any(path.endswith(file) for file in html_files):
@@ -57,9 +59,17 @@ async def handle_page_refreshes(request: Request, call_next):
 async def root():
     return FileResponse("complianceUI/setup.html")
 
+@app.get("/fast")
+async def fast_analyze_redirect():
+    return RedirectResponse(url="/fast_analyze.html")
+
 @app.get("/dashboard.html")
 async def dashboard():
     return FileResponse("complianceUI/dashboard.html")
+
+@app.get("/fast_analyze.html")
+async def fast_analyze_page():
+    return FileResponse("complianceUI/fast_analyze.html")
 
 @app.get("/norms")
 async def get_available_norms():
@@ -97,6 +107,16 @@ async def upload_document(pssi: UploadFile = File(...)):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+
+# Usage
+@app.post("/fast_analyze")
+async def analyze(policy: str = Form(...)):
+    orchestrator = ComplianceOrchestrator()
+    inspection_plan = orchestrator.policy_parser(policy)
+    check_results = orchestrator.execute_checks(inspection_plan["checks"])
+    
+    return orchestrator.generate_report(check_results, inspection_plan["priority"])
 
 @app.post("/analyze")
 async def analyze_documents(pssi_id: str = Form(...), norm_name: str = Form(None)):
@@ -142,7 +162,7 @@ async def analyze_documents(pssi_id: str = Form(...), norm_name: str = Form(None
         # Analyze infrastructure
         infra_result = infra_agent.analyze_infrastructure(pssi_text)
 
-        print("Document Analysis Result:", doc_result)
+        print("Document Analysis Steps:", doc_result["steps"])
         print("Infrastructure Analysis Result:", infra_result)
 
         # Pre-process results to extract structured data for the dashboard

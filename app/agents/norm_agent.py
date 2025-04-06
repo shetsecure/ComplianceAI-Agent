@@ -4,27 +4,8 @@ from langchain.agents import AgentExecutor, create_tool_calling_agent
 from typing import List, Any
 from app.tools.jira_tool import create_issue   
 
-from langchain.callbacks.base import BaseCallbackHandler
+from app.models.capture_handlers import CustomCaptureHandler
 
-class CustomCaptureHandler(BaseCallbackHandler):
-    def __init__(self):
-        self.log = []
-        
-    def on_chain_start(self, serialized, inputs, **kwargs):
-        # Safely handle serialized data structure
-        try:
-            chain_name = serialized.get('id', ['unknown'])[-1] if serialized else 'unknown_chain'
-            self.log.append(f"Chain start: {chain_name}")
-        except Exception as e:
-            self.log.append(f"Chain start error: {str(e)}")
-        
-    def on_tool_start(self, serialized, input_str, **kwargs):
-        # Safely handle tool name extraction
-        try:
-            tool_name = serialized.get('name', 'unnamed_tool') if serialized else 'unknown_tool'
-            self.log.append(f"Tool called: {tool_name}")
-        except Exception as e:
-            self.log.append(f"Tool start error: {str(e)}")
 
 class PSSIAnalyzerAgent:
     def __init__(self, model_name: str = "deepseek-chat", temperature: float = 0):

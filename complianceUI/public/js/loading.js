@@ -26,10 +26,10 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     // Animation timing
-    const totalDuration = 90000; // 7 seconds
-    const messageInterval = 8500; // Change message every 1.2 seconds
-    const factInterval = 2000; // Change fact every 2 seconds
-    const statusCheckInterval = 1500; // Check status every 1.5 seconds
+    const totalDuration = 120000; 
+    const messageInterval = 8500; 
+    const factInterval = 2000; 
+    const statusCheckInterval = 1500;
 
     let currentProgress = 0;
     let currentMessageIndex = 0;
