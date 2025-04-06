@@ -25,8 +25,7 @@ def list_rds_instances() -> str:
 
 @tool
 def list_ec2_instances() -> str:
-    """List all EC2 instances and return their details in a formatted string. 
-    Return only the instance id, type, state, public ip address, private ip address, subnet id, vpc id, and security groups"""
+    """List all EC2 instances and return their details."""
     try:
         client = boto3.client('ec2')
         response = client.describe_instances()
@@ -62,8 +61,7 @@ def list_s3_buckets() -> str:
 @tool
 def list_ec2_volumes() -> str:
     """
-    List all EC2 volumes and return their details in a formatted string.
-    Return only the volume id, size, state, and availability zone
+    List all EC2 volumes and return their details.
     """
     try:
         client = boto3.client('ec2')
@@ -81,8 +79,7 @@ def list_ec2_volumes() -> str:
 @tool
 def list_ec2_security_groups() -> str:
     """
-    List all EC2 security groups and return their details in a formatted string.
-    Return only the group id, name, description, vpc id, and ip permissions
+    List all EC2 security groups and return their details.
     """
     try:
         client = boto3.client('ec2')
