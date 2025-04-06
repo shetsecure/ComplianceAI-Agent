@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ComplianceAI Agent - Dashboard</title>
+    <link rel="stylesheet" href="public/css/styles.css">
+    <link rel="stylesheet" href="public/css/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="logo">
+                <img src="https://cdn.brandfetch.io/complianceai.com/w/400/h/400?c=1idIzgASg8ZjevSrwdY" alt="ComplianceAI Logo">
+                <span>ComplianceAI Dashboard</span>
+            </div>
+            <div class="header-actions">
+                <div class="refresh-status">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>Last updated: <span id="lastUpdated">Just now</span></span>
+                </div>
+                <button class="refresh-button" id="refreshButton">
+                    <i class="fas fa-sync-alt"></i>
+                    Refresh
+                </button>
+            </div>
+        </header>
+
+        <!-- Alerts Section -->
+        <section class="alerts-section">
+            <div class="alerts-header">
+                <h2>Active Alerts</h2>
+                <div class="alerts-actions">
+                    <button class="filter-button" id="filterButton">
+                        <i class="fas fa-filter"></i>
+                        Filter
+                    </button>
+                    <button class="settings-button" id="settingsButton">
+                        <i class="fas fa-cog"></i>
+                        Alert Settings
+                    </button>
+                </div>
+            </div>
+            
+            <div class="alerts-feed" id="alertsFeed">
+                <!-- Alert items will be dynamically added here -->
+            </div>
+        </section>
+
+        <!-- Main Content -->
+        <main class="dashboard-content">
+            <!-- Scorecard Section -->
+            <section class="scorecard-section">
+                <h2>Compliance Scorecard</h2>
+                <div class="scorecard-grid">
+                    <div class="scorecard" data-framework="gdpr">
+                        <div class="score-header">
+                            <h3>GDPR</h3>
+                            <div class="score-value" data-score="85">85%</div>
+                        </div>
+                        <div class="score-details">
+                            <div class="violations">
+                                <span class="label">Policy Violations:</span>
+                                <span class="value">3</span>
+                            </div>
+                            <button class="drill-down-button">View Details</button>
+                        </div>
+                    </div>
+                    
+                    <div class="scorecard" data-framework="iso27001">
+                        <div class="score-header">
+                            <h3>ISO 27001</h3>
+                            <div class="score-value" data-score="92">92%</div>
+                        </div>
+                        <div class="score-details">
+                            <div class="violations">
+                                <span class="label">Policy Violations:</span>
+                                <span class="value">1</span>
+                            </div>
+                            <button class="drill-down-button">View Details</button>
+                        </div>
+                    </div>
+                    
+                    <div class="scorecard" data-framework="soc2">
+                        <div class="score-header">
+                            <h3>SOC2</h3>
+                            <div class="score-value" data-score="78">78%</div>
+                        </div>
+                        <div class="score-details">
+                            <div class="violations">
+                                <span class="label">Policy Violations:</span>
+                                <span class="value">5</span>
+                            </div>
+                            <button class="drill-down-button">View Details</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Uncertainty Flags Section -->
+            <section class="uncertainty-section">
+                <h2>Uncertainty Flags</h2>
+                <div class="uncertainty-grid">
+                    <div class="uncertainty-card">
+                        <div class="uncertainty-header">
+                            <h3>Data Retention Policy</h3>
+                            <div class="confidence-score" data-confidence="60">60%</div>
+                        </div>
+                        <p class="uncertainty-description">
+                            Inconsistent data retention periods detected across systems
+                        </p>
+                        <div class="uncertainty-actions">
+                            <button class="review-button">
+                                <i class="fas fa-user-check"></i>
+                                Request Human Review
+                            </button>
+                            <button class="ignore-button">
+                                <i class="fas fa-times"></i>
+                                Ignore
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="uncertainty-card">
+                        <div class="uncertainty-header">
+                            <h3>Access Control Matrix</h3>
+                            <div class="confidence-score" data-confidence="45">45%</div>
+                        </div>
+                        <p class="uncertainty-description">
+                            Potential privilege escalation paths identified
+                        </p>
+                        <div class="uncertainty-actions">
+                            <button class="review-button">
+                                <i class="fas fa-user-check"></i>
+                                Request Human Review
+                            </button>
+                            <button class="ignore-button">
+                                <i class="fas fa-times"></i>
+                                Ignore
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Heatmap Section -->
+            <section class="heatmap-section">
+                <h2>Compliance Trends</h2>
+                <div class="heatmap-container">
+                    <div id="heatmap"></div>
+                    <div class="heatmap-legend">
+                        <div class="legend-item">
+                            <span class="color-box high"></span>
+                            <span>High Compliance</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="color-box medium"></span>
+                            <span>Medium Compliance</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="color-box low"></span>
+                            <span>Low Compliance</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Remediation Panel -->
+            <section class="remediation-section">
+                <h2>Remediation Actions</h2>
+                <div class="remediation-grid">
+                    <div class="remediation-card">
+                        <div class="remediation-header">
+                            <h3>Missing Encryption at Rest</h3>
+                            <div class="severity high">High</div>
+                        </div>
+                        <p class="remediation-description">
+                            Database backups are not encrypted. This violates GDPR Article 32.
+                        </p>
+                        <div class="remediation-actions">
+                            <div class="auto-remediation-toggle">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                                <span>Auto-remediate</span>
+                            </div>
+                            <button class="create-ticket-button">
+                                <i class="fab fa-jira"></i>
+                                Create Jira Ticket
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="remediation-card">
+                        <div class="remediation-header">
+                            <h3>Incomplete Audit Logs</h3>
+                            <div class="severity medium">Medium</div>
+                        </div>
+                        <p class="remediation-description">
+                            System logs do not capture all required user actions for ISO 27001 A.12.4.1
+                        </p>
+                        <div class="remediation-actions">
+                            <div class="auto-remediation-toggle">
+                                <label class="toggle-switch">
+                                    <input type="checkbox">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                                <span>Auto-remediate</span>
+                            </div>
+                            <button class="create-ticket-button">
+                                <i class="fab fa-jira"></i>
+                                Create Jira Ticket
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="public/js/dashboard.js"></script>
+</body>
+</html> 

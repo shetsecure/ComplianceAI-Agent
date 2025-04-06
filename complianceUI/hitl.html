@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ComplianceAI Agent - HITL Review</title>
+    <link rel="stylesheet" href="public/css/styles.css">
+    <link rel="stylesheet" href="public/css/hitl.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        var require = {
+            paths: {
+                'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs'
+            }
+        };
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs/loader.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs/editor/editor.main.nls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs/editor/editor.main.js"></script>
+</head>
+<body>
+    <div class="hitl-container">
+        <!-- Header -->
+        <header class="hitl-header">
+            <div class="logo">
+                <img src="https://cdn.brandfetch.io/complianceai.com/w/400/h/400?c=1idIzgASg8ZjevSrwdY" alt="ComplianceAI Logo">
+                <span>Human-in-the-Loop Review</span>
+            </div>
+            <div class="header-actions">
+                <div class="review-status">
+                    <i class="fas fa-clock"></i>
+                    <span>Review in Progress</span>
+                </div>
+                <button class="save-button" id="saveButton">
+                    <i class="fas fa-save"></i>
+                    Save Review
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="hitl-content">
+            <!-- Policy Comparison -->
+            <section class="comparison-section">
+                <div class="comparison-header">
+                    <h2>Policy Comparison</h2>
+                    <div class="comparison-actions">
+                        <button class="sync-button" id="syncButton">
+                            <i class="fas fa-sync-alt"></i>
+                            Sync Scrolling
+                        </button>
+                        <button class="diff-button" id="diffButton">
+                            <i class="fas fa-code-compare"></i>
+                            Show Differences
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="comparison-grid">
+                    <!-- Current Policy -->
+                    <div class="policy-column">
+                        <div class="policy-header">
+                            <h3>Current Policy</h3>
+                            <div class="policy-meta">
+                                <span class="policy-version">Version 2.1</span>
+                                <span class="policy-date">Last updated: 2024-03-15</span>
+                            </div>
+                        </div>
+                        <div id="currentPolicyEditor" class="policy-editor"></div>
+                    </div>
+
+                    <!-- AI Recommendations -->
+                    <div class="policy-column">
+                        <div class="policy-header">
+                            <h3>AI Recommendations</h3>
+                            <div class="policy-meta">
+                                <span class="policy-confidence">Confidence: 92%</span>
+                                <span class="policy-date">Generated: Just now</span>
+                            </div>
+                        </div>
+                        <div id="aiPolicyEditor" class="policy-editor"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Review Panel -->
+            <section class="review-panel">
+                <div class="review-header">
+                    <h2>Review Actions</h2>
+                    <div class="review-actions">
+                        <button class="approve-button" id="approveButton">
+                            <i class="fas fa-thumbs-up"></i>
+                            Approve Changes
+                        </button>
+                        <button class="reject-button" id="rejectButton">
+                            <i class="fas fa-thumbs-down"></i>
+                            Reject Changes
+                        </button>
+                    </div>
+                </div>
+
+                <div class="review-content">
+                    <!-- Auditor Notes -->
+                    <div class="notes-section">
+                        <h3>Auditor Notes</h3>
+                        <textarea 
+                            id="auditorNotes" 
+                            class="notes-textarea" 
+                            placeholder="Add your review notes here..."
+                            rows="4"
+                        ></textarea>
+                    </div>
+
+                    <!-- Change Summary -->
+                    <div class="changes-section">
+                        <h3>Change Summary</h3>
+                        <div class="changes-list" id="changesList">
+                            <!-- Changes will be dynamically added here -->
+                        </div>
+                    </div>
+
+                    <!-- Audit Trail -->
+                    <div class="audit-trail">
+                        <h3>Audit Trail</h3>
+                        <div class="audit-list" id="auditList">
+                            <!-- Audit entries will be dynamically added here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="public/js/hitl.js"></script>
+</body>
+</html> 

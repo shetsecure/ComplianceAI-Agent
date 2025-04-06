@@ -1,0 +1,257 @@
+/* Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #2c3e50;
+}
+
+/* Loading Container */
+.loading-container {
+    width: 100%;
+    max-width: 800px;
+    padding: 2rem;
+    text-align: center;
+}
+
+.loading-content {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    padding: 3rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* AI Agent Animation */
+.ai-agent {
+    width: 120px;
+    height: 160px;
+    margin: 0 auto 2rem;
+    position: relative;
+}
+
+.agent-head {
+    width: 80px;
+    height: 80px;
+    background: #2196F3;
+    border-radius: 50%;
+    margin: 0 auto;
+    position: relative;
+    animation: float 3s ease-in-out infinite;
+}
+
+.agent-eyes {
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+}
+
+.eye {
+    width: 12px;
+    height: 12px;
+    background: white;
+    border-radius: 50%;
+    position: relative;
+    animation: blink 3s infinite;
+}
+
+.eye::after {
+    content: '';
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: #2c3e50;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.agent-mouth {
+    width: 20px;
+    height: 4px;
+    background: white;
+    border-radius: 2px;
+    position: absolute;
+    bottom: 25%;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: talk 1s infinite;
+}
+
+.agent-body {
+    width: 60px;
+    height: 80px;
+    background: #1976D2;
+    border-radius: 10px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.agent-shield {
+    width: 40px;
+    height: 50px;
+    background: #2196F3;
+    border-radius: 8px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation: pulse 2s infinite;
+}
+
+/* Loading Text */
+.loading-text h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #2c3e50;
+}
+
+.message-text {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 2rem;
+}
+
+/* Progress Bar */
+.loading-progress {
+    margin: 2rem 0;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #2196F3;
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+/* Compliance Status */
+.compliance-status {
+    margin: 2rem 0;
+    text-align: left;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    opacity: 0;
+    transform: translateX(-20px);
+    animation: slideIn 0.5s forwards;
+}
+
+.status-item:nth-child(1) { animation-delay: 0.5s; }
+.status-item:nth-child(2) { animation-delay: 1s; }
+.status-item:nth-child(3) { animation-delay: 1.5s; }
+
+.status-icon {
+    width: 24px;
+    height: 24px;
+    background: #4CAF50;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    margin-right: 1rem;
+    font-size: 0.8rem;
+}
+
+.status-text {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+/* Loading Facts */
+.loading-facts {
+    margin-top: 2rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.fact-text {
+    font-size: 0.9rem;
+    color: #666;
+    font-style: italic;
+}
+
+/* Animations */
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+@keyframes blink {
+    0%, 96%, 100% { transform: scaleY(1); }
+    98% { transform: scaleY(0.1); }
+}
+
+@keyframes talk {
+    0%, 100% { width: 20px; }
+    50% { width: 30px; }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-50%, -50%) scale(1.05); }
+}
+
+@keyframes slideIn {
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    .loading-content {
+        padding: 2rem;
+    }
+
+    .loading-text h1 {
+        font-size: 1.5rem;
+    }
+
+    .ai-agent {
+        width: 100px;
+        height: 140px;
+    }
+
+    .agent-head {
+        width: 60px;
+        height: 60px;
+    }
+
+    .agent-body {
+        width: 50px;
+        height: 70px;
+    }
+} 

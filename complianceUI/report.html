@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ComplianceAI Agent - Audit & Reporting</title>
+    <link rel="stylesheet" href="public/css/styles.css">
+    <link rel="stylesheet" href="public/css/report.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+</head>
+<body>
+    <div class="report-container">
+        <!-- Header -->
+        <header class="report-header">
+            <div class="logo">
+                <img src="https://cdn.brandfetch.io/complianceai.com/w/400/h/400?c=1idIzgASg8ZjevSrwdY" alt="ComplianceAI Logo">
+                <span>Audit & Reporting Portal</span>
+            </div>
+            <div class="header-actions">
+                <div class="last-updated">
+                    <i class="fas fa-clock"></i>
+                    <span>Last updated: <span id="lastUpdated">Just now</span></span>
+                </div>
+                <button class="refresh-button" id="refreshButton">
+                    <i class="fas fa-sync-alt"></i>
+                    Refresh
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="report-content">
+            <!-- Report Builder Section -->
+            <section class="report-builder">
+                <div class="section-header">
+                    <h2>Report Builder</h2>
+                    <div class="section-actions">
+                        <button class="new-report-button" id="newReportButton">
+                            <i class="fas fa-plus"></i>
+                            New Report
+                        </button>
+                    </div>
+                </div>
+
+                <div class="templates-grid">
+                    <!-- GDPR Report Template -->
+                    <div class="template-card">
+                        <div class="template-header">
+                            <i class="fas fa-shield-alt"></i>
+                            <h3>GDPR Compliance Report</h3>
+                        </div>
+                        <div class="template-description">
+                            Comprehensive report covering GDPR requirements and compliance status.
+                        </div>
+                        <div class="template-meta">
+                            <span class="template-date">Last generated: 2024-03-15</span>
+                            <span class="template-status">Status: Compliant</span>
+                        </div>
+                        <div class="template-actions">
+                            <button class="generate-button" data-template="gdpr">
+                                <i class="fas fa-file-pdf"></i>
+                                Generate PDF
+                            </button>
+                            <button class="export-button" data-template="gdpr">
+                                <i class="fas fa-file-csv"></i>
+                                Export CSV
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ISO 27001 Template -->
+                    <div class="template-card">
+                        <div class="template-header">
+                            <i class="fas fa-certificate"></i>
+                            <h3>ISO 27001 Audit Report</h3>
+                        </div>
+                        <div class="template-description">
+                            Detailed audit report for ISO 27001 certification requirements.
+                        </div>
+                        <div class="template-meta">
+                            <span class="template-date">Last generated: 2024-03-10</span>
+                            <span class="template-status">Status: In Progress</span>
+                        </div>
+                        <div class="template-actions">
+                            <button class="generate-button" data-template="iso27001">
+                                <i class="fas fa-file-pdf"></i>
+                                Generate PDF
+                            </button>
+                            <button class="export-button" data-template="iso27001">
+                                <i class="fas fa-file-csv"></i>
+                                Export CSV
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- SOC2 Template -->
+                    <div class="template-card">
+                        <div class="template-header">
+                            <i class="fas fa-chart-line"></i>
+                            <h3>SOC2 Type II Report</h3>
+                        </div>
+                        <div class="template-description">
+                            Service Organization Control report for security, availability, and confidentiality.
+                        </div>
+                        <div class="template-meta">
+                            <span class="template-date">Last generated: 2024-03-05</span>
+                            <span class="template-status">Status: Non-Compliant</span>
+                        </div>
+                        <div class="template-actions">
+                            <button class="generate-button" data-template="soc2">
+                                <i class="fas fa-file-pdf"></i>
+                                Generate PDF
+                            </button>
+                            <button class="export-button" data-template="soc2">
+                                <i class="fas fa-file-csv"></i>
+                                Export CSV
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Evidence Repository Section -->
+            <section class="evidence-repository">
+                <div class="section-header">
+                    <h2>Evidence Repository</h2>
+                    <div class="search-box">
+                        <input type="text" placeholder="Search evidence..." id="evidenceSearch">
+                        <button class="search-button">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="evidence-filters">
+                    <div class="filter-group">
+                        <label>Type:</label>
+                        <select id="evidenceType">
+                            <option value="all">All Types</option>
+                            <option value="logs">Logs</option>
+                            <option value="policies">Policies</option>
+                            <option value="certificates">Certificates</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Date Range:</label>
+                        <select id="dateRange">
+                            <option value="all">All Time</option>
+                            <option value="week">Last Week</option>
+                            <option value="month">Last Month</option>
+                            <option value="quarter">Last Quarter</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="evidence-grid" id="evidenceGrid">
+                    <!-- Evidence items will be dynamically added here -->
+                </div>
+            </section>
+
+            <!-- Timeline Section -->
+            <section class="compliance-timeline">
+                <div class="section-header">
+                    <h2>Compliance Timeline</h2>
+                    <div class="timeline-actions">
+                        <button class="compare-button" id="compareButton">
+                            <i class="fas fa-code-compare"></i>
+                            Compare Versions
+                        </button>
+                    </div>
+                </div>
+
+                <div class="timeline-container">
+                    <div class="timeline-chart">
+                        <canvas id="complianceChart"></canvas>
+                    </div>
+                    <div class="timeline-events" id="timelineEvents">
+                        <!-- Timeline events will be dynamically added here -->
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="public/js/report.js"></script>
+</body>
+</html> 

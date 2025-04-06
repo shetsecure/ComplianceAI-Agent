@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ComplianceAI Agent - Setup Wizard</title>
+    <link rel="stylesheet" href="public/css/styles.css">
+    <link rel="stylesheet" href="public/css/setup.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="setup-container">
+        <div class="setup-header">
+            <div class="logo">
+                <img src="https://cdn.brandfetch.io/complianceai.com/w/400/h/400?c=1idIzgASg8ZjevSrwdY" alt="ComplianceAI Logo">
+                <span>ComplianceAI Agent Setup</span>
+            </div>
+        </div>
+
+        <div class="setup-progress">
+            <div class="progress-bar">
+                <div class="progress-step active" data-step="1">
+                    <div class="step-number">1</div>
+                    <div class="step-label">Regulations</div>
+                </div>
+                <div class="progress-step" data-step="2">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Policies</div>
+                </div>
+                <div class="progress-step" data-step="3">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Integrations</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="setup-content">
+            <!-- Step 1: Regulation Selection -->
+            <div class="setup-step active" id="step-1">
+                <h2>Select Compliance Frameworks</h2>
+                <p class="step-description">Choose the regulations and standards that apply to your organization or guidelines that you want to follow</p>
+                
+                <div class="regulation-grid">
+                    <div class="regulation-card" data-framework="anssi">
+                        <input type="checkbox" id="anssi">
+                        <label for="anssi">
+                            <i class="fas fa-shield-alt"></i>
+                            <h3>ANSSI Hygiene Guide</h3>
+                            <p>French National Cybersecurity Agency</p>
+                            <div class="tooltip">
+                                <i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">Essential security measures for organizations</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="regulation-card" data-framework="enisa">
+                        <input type="checkbox" id="enisa">
+                        <label for="enisa">
+                            <i class="fas fa-shield-alt"></i>
+                            <h3>ENISA Guidelines</h3>
+                            <p>EU Cybersecurity Agency</p>
+                            <div class="tooltip">
+                                <i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">European Union Agency for Cybersecurity recommendations and best practices</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="regulation-card" data-framework="nis2">
+                        <input type="checkbox" id="nis2">
+                        <label for="nis2">
+                            <i class="fas fa-network-wired"></i>
+                            <h3>NIS2 Directive</h3>
+                            <p>Network and Information Security</p>
+                            <div class="tooltip">
+                                <i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">EU directive for cybersecurity risk management and reporting</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="regulation-card" data-framework="gdpr">
+                        <input type="checkbox" id="gdpr">
+                        <label for="gdpr">
+                            <i class="fas fa-shield-alt"></i>
+                            <h3>GDPR</h3>
+                            <p>General Data Protection Regulation</p>
+                            <div class="tooltip">
+                                <i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">European Union's data protection and privacy regulation</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="regulation-card" data-framework="ccpa">
+                        <input type="checkbox" id="ccpa">
+                        <label for="ccpa">
+                            <i class="fas fa-user-shield"></i>
+                            <h3>CCPA</h3>
+                            <p>California Consumer Privacy Act</p>
+                            <div class="tooltip">
+                                <i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">California's data privacy law for consumer rights and business obligations</span>
+                            </div>
+                        </label>
+                    </div>
+                    
+                    <div class="regulation-card" data-framework="iso27001">
+                        <input type="checkbox" id="iso27001">
+                        <label for="iso27001">
+                            <i class="fas fa-lock"></i>
+                            <h3>ISO 27001</h3>
+                            <p>Information Security Management</p>
+                            <div class="tooltip">
+                                <i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">International standard for information security management</span>
+                            </div>
+                        </label>
+                    </div>
+                    
+                    <div class="regulation-card" data-framework="soc2">
+                        <input type="checkbox" id="soc2">
+                        <label for="soc2">
+                            <i class="fas fa-certificate"></i>
+                            <h3>SOC2</h3>
+                            <p>Service Organization Control 2</p>
+                            <div class="tooltip">
+                                <i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">Trust Services Criteria for security, availability, processing integrity, confidentiality, and privacy</span>
+                            </div>
+                        </label>
+                    </div>
+                    
+                    <div class="regulation-card" data-framework="nist">
+                        <input type="checkbox" id="nist">
+                        <label for="nist">
+                            <i class="fas fa-shield-virus"></i>
+                            <h3>NIST CSF</h3>
+                            <p>Cybersecurity Framework</p>
+                            <div class="tooltip">
+                                <i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">Framework for improving critical infrastructure cybersecurity</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Policy Upload -->
+            <div class="setup-step" id="step-2">
+                <h2>Upload Security Policies & Documentation</h2>
+                <p class="step-description">Upload your existing organization's security policies and documentation</p>
+                
+                <div class="upload-container">
+                    <div class="upload-zone" id="dropZone">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <h3>Drag & Drop Files Here</h3>
+                        <p>or</p>
+                        <button class="upload-button">Browse Files</button>
+                        <input type="file" id="fileInput" multiple accept=".pdf,.txt,.doc,.docx">
+                    </div>
+                    
+                    <div class="file-preview" id="filePreview">
+                        <h3>Uploaded Files</h3>
+                        <div class="preview-list" id="previewList">
+                            <!-- Files will be listed here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Integration Hub -->
+            <div class="setup-step" id="step-3">
+                <h2>Connect Your Tools</h2>
+                <p class="step-description">Integrate with your existing security and compliance tools (based on your provided documentation)</p>
+                
+                <div class="integration-grid">
+                    <div class="integration-card" data-service="aws">
+                        <img src="https://cdn.brandfetch.io/aws.com/w/400/h/400?c=1idIzgASg8ZjevSrwdY" alt="AWS">
+                        <h3>Amazone Web Services</h3>
+                        <div class="connection-status">
+                            <span class="status-indicator disconnected"></span>
+                            <span class="status-text">Disconnected</span>
+                        </div>
+                        <button class="oauth-button">
+                            <i class="fab fa-aws"></i>
+                            Connect with AWS
+                        </button>
+                        <button class="test-button">Test Connection</button>
+                    </div>
+                    
+                    <div class="integration-card" data-service="jira">
+                        <img src="https://cdn.brandfetch.io/atlassian.com/w/400/h/400?c=1idIzgASg8ZjevSrwdY" alt="Jira">
+                        <h3>Jira Atlassian</h3>
+                        <div class="connection-status">
+                            <span class="status-indicator disconnected"></span>
+                            <span class="status-text">Disconnected</span>
+                        </div>
+                        <button class="oauth-button">
+                            <i class="fab fa-jira"></i>
+                            Connect with your Atlassian account
+                        </button>
+                        <button class="test-button">Test Connection</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="setup-navigation">
+            <button class="nav-button" id="prevButton" disabled>Previous</button>
+            <button class="nav-button primary" id="nextButton">Next</button>
+        </div>
+    </div>
+
+    <script src="public/js/setup.js"></script>
+</body>
+</html> 
