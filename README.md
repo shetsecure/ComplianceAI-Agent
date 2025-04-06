@@ -29,23 +29,12 @@ Submodules are separate Git repositories embedded within this project, allowing 
 
 ## Submodules Overview
 
-### Core Engine (core)
-- **Path**: `/core`
-- **Purpose**: Provides the AI-powered compliance analysis engine
-- **Repository URL**: `https://github.com/shetsecure/core-engine.git`
-- **Version**: v2.1.0
+### Uncompliant AWS Infrastructure
+- **Path**: `/uncompliant_aws_infra`
+- **Purpose**: A misconfigured AWS infrastructure used to test our ComplianceAI Agent
+- **Repository URL**: `https://github.com/AsriMed/uncompliant_aws_infra.git`
+- **Version**: v0.0.1
 
-### Connectors (connectors)
-- **Path**: `/connectors`
-- **Purpose**: Contains integration adapters for AWS, Jira, and other services
-- **Repository URL**: `https://github.com/shetsecure/connectors.git`
-- **Version**: v1.3.2
-
-### Compliance Templates (compliance-templates)
-- **Path**: `/compliance-templates`
-- **Purpose**: Contains template definitions for various compliance frameworks (GDPR, NIS2, ISO27001, etc.)
-- **Repository URL**: `https://github.com/shetsecure/compliance-templates.git`
-- **Version**: v1.5.0
 
 Note that submodules are initialized as read-only links to specific commits in their respective repositories. They require explicit cloning and initialization as detailed in the Usage Instructions.
 
@@ -129,26 +118,10 @@ When you need to modify submodule content:
 
 The main repository is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-Each submodule may have its own license:
-
-- Core Engine: MIT License
-- Connectors: Apache 2.0 License
-- Compliance Templates: Creative Commons BY-SA 4.0
-
+Each submodule may have its own license.
 Please refer to each submodule's license file for specific terms.
 
 ## Troubleshooting
-
-### Detached HEAD State in Submodules
-
-Submodules typically checkout a specific commit, resulting in a "detached HEAD" state. This is expected behavior. If you need to make changes:
-
-```bash
-cd <submodule-path>
-git checkout -b my-feature-branch
-# Make changes, commit, and push to your fork
-# Then follow contribution guidelines
-```
 
 ### Submodule Updates Not Reflecting
 
