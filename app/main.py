@@ -2,15 +2,13 @@ from fastapi import FastAPI, UploadFile, File, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-import os
 from pathlib import Path
 import uuid
 from datetime import datetime
 
 from app.services.pdf_service import extract_text_from_pdf
-from app.services.llm_service import PSSIAnalyzerAgent
-from app.tools.jira_tool import create_issue
-from app.tools.infra_agent import analyze_infrastructure
+from app.agents.infra_agent import InfraAgent
+from app.agents.norm_agent import PSSIAnalyzerAgent
 
 
 # Create uploads directory if it doesn't exist
@@ -80,13 +78,26 @@ async def analyze_documents(norm_id: str = Form(...), pssi_id: str = Form(...)):
         pssi_text = extract_text_from_pdf(pssi_path)
 
         # Initialize LLM service and analyze
-        llm_service = PSSIAnalyzerAgent()
-        tools = [create_issue, analyze_infrastructure]
-        result = llm_service.analyze_documents(norm_text, pssi_text, tools)
+        norm_agent = PSSIAnalyzerAgent()
+        infra_agent = InfraAgent()
 
-        print(result)
+        doc_result = norm_agent.analyze_documents(norm_text, pssi_text)
+        print("---------_DOC")
+        print(doc_result)
 
-        return result
+        infra_result = infra_agent.analyze_infrastructure(pssi_text)
+        print("---------INFRA")
+        print(infra_result)
+
+        # result = doc_result + infra_result
+        result =  infra_result
+
+        return doc_result
+
+        # return {
+        #     "infrastructure_analysis": infra_result,
+        #     "document_analysis": doc_result,
+        # }
 
     except Exception as e:
         print(e)
