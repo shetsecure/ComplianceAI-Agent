@@ -1,0 +1,3 @@
+[submodule "uncompliant_aws_infra"]
+	path = uncompliant_aws_infra
+	url = https://github.com/AsriMed/uncompliant_aws_infra
