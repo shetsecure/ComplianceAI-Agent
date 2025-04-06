@@ -8,6 +8,7 @@ ComplianceAI Agent is an intelligent compliance automation tool designed to assi
 
 - [Repository Structure](#repository-structure)
 - [Submodules Overview](#submodules-overview)
+- [Prerequisites](#prerequisites)
 - [Usage Instructions](#usage-instructions)
 - [Contribution Guidelines](#contribution-guidelines)
 - [License](#license)
@@ -24,7 +25,6 @@ The repository is organized as follows:
 - `/app/tools/` - Tools to be used by ComplianceAI Agent 
 - `/norms/` - Compliance frameworks and templates (submodule)
 
-
 Submodules are separate Git repositories embedded within this project, allowing for modular development and maintenance of specialized components.
 
 ## Submodules Overview
@@ -35,8 +35,36 @@ Submodules are separate Git repositories embedded within this project, allowing 
 - **Repository URL**: `https://github.com/AsriMed/uncompliant_aws_infra.git`
 - **Version**: v0.0.1
 
-
 Note that submodules are initialized as read-only links to specific commits in their respective repositories. They require explicit cloning and initialization as detailed in the Usage Instructions.
+
+## Prerequisites
+
+Before you can run the ComplianceAI Agent, you'll need to install the following dependencies:
+
+### uv - Python Package Installer
+
+`uv` is a required tool for managing the project's Python dependencies. It's a fast, reliable Python package installer and resolver that replaces pip.
+
+#### Installing uv
+
+Install uv globally using pip:
+
+```bash
+pip install uv
+```
+
+Or using curl (recommended for production environments):
+
+```bash
+curl -sSf https://install.python-uv.org | python3
+```
+
+Learn more about uv at [https://github.com/astral-sh/uv](https://github.com/astral-sh/uv).
+
+### Other Requirements
+
+- Python 3.9+ 
+- Git
 
 ## Usage Instructions
 
@@ -58,25 +86,25 @@ git submodule init
 git submodule update
 ```
 
+### Installing Dependencies with uv
+
+Before running the application, you need to install the required dependencies using uv:
+
+```bash
+# Launch uv init
+uv init
+
+# Start uv sync, it will install everything for you (quickly, so quickly)
+uv sync
+```
+
 ### Updating All Submodules to Latest Versions
 
 ```bash
 git submodule update --remote
 ```
 
-### Updating Specific Submodule
-
-```bash
-cd <submodule-path>
-git checkout main
-git pull
-cd ..
-git add <submodule-path>
-git commit -m "Updated submodule to latest version"
-```
-
 ### Running the Application Locally
-
 
 1. Start a local server using uvicorn:
    ```bash
@@ -86,6 +114,8 @@ git commit -m "Updated submodule to latest version"
 2. Navigate to `http://localhost:8000` in your browser
 
 3. Ta-da! You deployed the app.
+
+
 
 ## Contribution Guidelines
 
@@ -105,6 +135,17 @@ When you need to modify submodule content:
 2. Make changes in your fork
 3. Submit pull requests to the upstream submodule repository
 4. Once accepted, update the submodule reference in the main repository
+
+### Updating Specific Submodule
+
+```bash
+cd <submodule-path>
+git checkout main
+git pull
+cd ..
+git add <submodule-path>
+git commit -m "Updated submodule to latest version"
+```
 
 **Important**: Do not commit changes directly to submodules within the main repository. Always contribute to the original submodule repositories.
 
@@ -149,5 +190,31 @@ If you encounter conflicts when updating submodules:
 2. Resolve conflicts manually
 3. Commit changes
 4. Return to main repository and commit the updated submodule reference
+
+### Common uv Issues
+
+#### Command Not Found
+
+If you encounter a "command not found" error when trying to use uv:
+
+```bash
+# Ensure uv is in your PATH
+export PATH="$HOME/.cargo/bin:$PATH"
+
+# Or reinstall uv
+curl -sSf https://install.python-uv.org | python3
+```
+
+#### Dependency Resolution Errors
+
+If uv encounters dependency resolution errors:
+
+```bash
+# Try with more verbose output
+uv pip install -r requirements.txt --verbose
+
+# Or try installing dependencies one by one
+uv pip install <problematic-package>
+```
 
 For additional issues, please check the GitHub Issues page or contact the maintainers.
