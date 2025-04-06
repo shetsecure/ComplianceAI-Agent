@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // DOM Elements
     const policyTextarea = document.getElementById('policy-textarea');
     const analyzeButton = document.getElementById('analyze-button');
+    const reflectButton = document.getElementById('reflect-button');
     const clearButton = document.getElementById('clear-button');
     const copyButton = document.getElementById('copy-button');
     const sampleSelector = document.getElementById('sample-selector');
@@ -75,9 +76,86 @@ Data Protection Requirements:
     
     // Event Listeners
     analyzeButton.addEventListener('click', analyzePolicy);
+    reflectButton.addEventListener('click', reflectiveAnalysis);
     clearButton.addEventListener('click', clearForm);
     copyButton.addEventListener('click', copyResults);
     sampleSelector.addEventListener('change', loadSamplePolicy);
+    
+    // Function to handle reflective policy analysis
+    async function reflectiveAnalysis() {
+        const policyText = policyTextarea.value.trim();
+        
+        if (!policyText) {
+            showError('Please enter policy text before analyzing.');
+            return;
+        }
+        
+        // Check for policies that are likely too large
+        if (policyText.length > 30000) {
+            if (!confirm('This policy text is very large and may exceed token limits for reflective analysis. Continue anyway? (Consider using standard analysis for large documents)')) {
+                return;
+            }
+        }
+        
+        // Show loading indicator and hide other containers
+        loadingIndicator.classList.add('active');
+        loadingIndicator.querySelector('p').textContent = 'Performing reflective analysis (this may take longer)...';
+        resultsContainer.classList.remove('active');
+        errorContainer.classList.remove('active');
+        
+        try {
+            const formData = new FormData();
+            formData.append('policy', policyText);
+            
+            const response = await fetch('/reflect_analyze', {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                
+                // Handle specific error cases
+                if (response.status === 413) {
+                    throw new Error('Policy text is too large for reflective analysis. Please reduce size or use standard analysis instead.');
+                } else {
+                    throw new Error(`Server returned ${response.status}: ${errorData.detail || response.statusText}`);
+                }
+            }
+            
+            // Get the raw text response
+            const rawData = await response.text();
+            
+            try {
+                // Try to parse it as JSON
+                const data = JSON.parse(rawData);
+                displayResults(data);
+            } catch (jsonError) {
+                // If not valid JSON, display the raw text
+                console.error('Error parsing JSON:', jsonError);
+                console.log('Raw response:', rawData);
+                displayRawResults(rawData);
+            }
+        } catch (error) {
+            showError(`Error performing reflective analysis: ${error.message}`);
+            console.error('Analysis error:', error);
+            
+            // Suggest standard analysis if token error
+            if (error.message.includes('too large') || error.message.includes('token')) {
+                const errorElement = document.createElement('div');
+                errorElement.innerHTML = '<br><button id="try-standard" class="button primary-button"><i class="fas fa-bolt"></i> Try Standard Analysis Instead</button>';
+                errorMessage.appendChild(errorElement);
+                
+                document.getElementById('try-standard').addEventListener('click', function() {
+                    errorContainer.classList.remove('active');
+                    analyzePolicy();
+                });
+            }
+        } finally {
+            loadingIndicator.classList.remove('active');
+            loadingIndicator.querySelector('p').textContent = 'Analyzing policy and generating compliance report...';
+        }
+    }
     
     // Function to handle policy analysis
     async function analyzePolicy() {
@@ -136,32 +214,154 @@ Data Protection Requirements:
         const detailedResults = document.createElement('div');
         detailedResults.className = 'detailed-results';
         
-        // Add summary section
+        // Add summary section - check for different formats
         const summarySection = document.createElement('div');
         summarySection.className = 'result-section';
-        summarySection.innerHTML = `
-            <h3>Compliance Summary</h3>
-            <div class="summary-content">${data.summary || 'No summary available'}</div>
-        `;
+        
+        // Handle both standard and reflective formats
+        if (data.summary) {
+            // Standard orchestrator format
+            summarySection.innerHTML = `
+                <h3>Compliance Summary</h3>
+                <div class="summary-content">${data.summary || 'No summary available'}</div>
+            `;
+        } else if (data.status && data.cycles) {
+            // Reflective orchestrator format
+            let tokenInfo = '';
+            if (data.token_usage) {
+                const percentUsed = Math.round((data.token_usage.estimated_tokens / data.token_usage.max_limit) * 100);
+                const tokenClass = percentUsed > 70 ? 'token-high' : 'token-normal';
+                tokenInfo = `
+                    <div class="token-usage ${tokenClass}">
+                        <span>Token Usage: <strong>${data.token_usage.estimated_tokens.toLocaleString()}</strong> / ${data.token_usage.max_limit.toLocaleString()} (${percentUsed}%)</span>
+                    </div>
+                `;
+            }
+            
+            // Add truncation warning if applicable
+            let truncationWarning = '';
+            if (data.truncated) {
+                truncationWarning = `
+                    <div class="truncation-warning">
+                        <i class="fas fa-exclamation-triangle"></i> 
+                        Policy text was truncated from approximately ${data.original_token_estimate.toLocaleString()} tokens 
+                        to fit token limits. Analysis is based on the beginning portion only.
+                    </div>
+                `;
+            }
+            
+            summarySection.innerHTML = `
+                <h3>Reflective Analysis Results</h3>
+                ${truncationWarning}
+                <div class="summary-header">
+                    <span>Status: <strong>${data.status}</strong></span>
+                    <span>Cycles: <strong>${data.cycles}</strong></span>
+                    <span>Tickets Created: <strong>${data.tickets_created}</strong></span>
+                </div>
+                ${tokenInfo}
+                <div class="summary-content">${data.summary || 'Processing complete'}</div>
+            `;
+        }
         detailedResults.appendChild(summarySection);
         
-        // Add findings section if available
-        if (data.findings && data.findings.length > 0) {
+        // Add reflections section if available (for reflective orchestrator)
+        if (data.memory && Array.isArray(data.memory)) {
+            const reflectionsSection = document.createElement('div');
+            reflectionsSection.className = 'result-section';
+            
+            let reflectionsHtml = '<h3>Agent Reflections</h3>';
+            
+            // Add a collapsible section for each reflection cycle
+            data.memory.forEach((cycle, index) => {
+                reflectionsHtml += `
+                    <div class="reflection-cycle">
+                        <div class="reflection-header">
+                            <span class="cycle-number">Cycle ${index + 1}</span>
+                            <span class="expand-icon"><i class="fas fa-chevron-down"></i></span>
+                        </div>
+                        <div class="reflection-content">
+                            <div class="reflection-output"><strong>Output:</strong> ${cycle.results?.output || 'No output available'}</div>
+                `;
+                
+                // Add tool calls if available
+                if (cycle.results?.tool_calls && cycle.results.tool_calls.length > 0) {
+                    reflectionsHtml += `<div class="reflection-tools"><strong>Tools Used:</strong></div><ul class="tool-list">`;
+                    cycle.results.tool_calls.forEach(tool => {
+                        reflectionsHtml += `
+                            <li class="tool-item">
+                                <div class="tool-name">${tool.tool || 'Unknown tool'}</div>
+                                <div class="tool-details">
+                                    Input: ${JSON.stringify(tool.input)}<br>
+                                    Result: ${tool.output || 'No output'}
+                                </div>
+                            </li>
+                        `;
+                    });
+                    reflectionsHtml += `</ul>`;
+                }
+                
+                // Add logs if available
+                if (cycle.results?.logs && cycle.results.logs.length > 0) {
+                    reflectionsHtml += `<div class="reflection-logs"><strong>Thought Process:</strong><pre>${cycle.results.logs.join('\n')}</pre></div>`;
+                }
+                
+                reflectionsHtml += `
+                        </div>
+                    </div>
+                `;
+            });
+            
+            reflectionsSection.innerHTML = reflectionsHtml;
+            detailedResults.appendChild(reflectionsSection);
+            
+            // Add script to handle accordion behavior
+            setTimeout(() => {
+                document.querySelectorAll('.reflection-header').forEach(header => {
+                    header.addEventListener('click', () => {
+                        header.parentNode.classList.toggle('expanded');
+                    });
+                });
+                
+                // Automatically expand the first reflection cycle
+                const firstCycle = document.querySelector('.reflection-cycle');
+                if (firstCycle) firstCycle.classList.add('expanded');
+            }, 100);
+        }
+        
+        // Add findings section if available in standard format
+        if (data.findings && Array.isArray(data.findings)) {
             const findingsSection = document.createElement('div');
             findingsSection.className = 'result-section';
             
             let findingsHtml = '<h3>Findings</h3><ul class="findings-list">';
             data.findings.forEach(finding => {
-                const statusClass = finding.status === 'compliant' ? 'compliant' : 'non-compliant';
-                findingsHtml += `
-                    <li class="finding-item ${statusClass}">
-                        <div class="finding-header">
-                            <span class="finding-type">${finding.type}</span>
-                            <span class="finding-status">${finding.status || 'N/A'}</span>
-                        </div>
-                        <div class="finding-data">${finding.data || 'No data available'}</div>
-                    </li>
-                `;
+                // Check if it's the standard format or reflective format
+                if (finding.type) {
+                    // Standard format
+                    const statusClass = finding.status === 'compliant' ? 'compliant' : 'non-compliant';
+                    findingsHtml += `
+                        <li class="finding-item ${statusClass}">
+                            <div class="finding-header">
+                                <span class="finding-type">${finding.type}</span>
+                                <span class="finding-status">${finding.status || 'N/A'}</span>
+                            </div>
+                            <div class="finding-data">${finding.data || 'No data available'}</div>
+                        </li>
+                    `;
+                } else if (finding.tool) {
+                    // Reflective format
+                    findingsHtml += `
+                        <li class="finding-item">
+                            <div class="finding-header">
+                                <span class="finding-type">${finding.tool}</span>
+                            </div>
+                            <div class="finding-data">
+                                <strong>Input:</strong> ${JSON.stringify(finding.input)}<br><br>
+                                <strong>Output:</strong> ${finding.output || 'No output available'}
+                            </div>
+                        </li>
+                    `;
+                }
             });
             findingsHtml += '</ul>';
             
@@ -198,21 +398,19 @@ Data Protection Requirements:
         const jsonParent = resultsJson.parentNode;
         jsonParent.insertBefore(detailedResults, resultsJson);
         
-        // Add a separator
+        // Insert a separator
         const separator = document.createElement('hr');
         separator.className = 'results-separator';
         jsonParent.insertBefore(separator, resultsJson);
         
-        // Add a label for the raw JSON
-        const jsonLabel = document.createElement('h4');
-        jsonLabel.textContent = 'Raw JSON Response:';
+        // Add a label for the JSON
+        const jsonLabel = document.createElement('div');
         jsonLabel.className = 'json-label';
+        jsonLabel.textContent = 'Raw JSON Response:';
         jsonParent.insertBefore(jsonLabel, resultsJson);
         
+        // Show the results container
         resultsContainer.classList.add('active');
-        
-        // Scroll to results
-        resultsContainer.scrollIntoView({ behavior: 'smooth' });
     }
     
     // Function to display raw text results

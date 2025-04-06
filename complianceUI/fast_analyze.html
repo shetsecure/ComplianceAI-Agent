@@ -156,6 +156,67 @@
             white-space: pre-line;
         }
         
+        .summary-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: #e8f5e9;
+            border-radius: 4px;
+        }
+        
+        .summary-header span {
+            flex: 1;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        
+        .summary-header strong {
+            display: block;
+            font-size: 1.1rem;
+            margin-top: 0.3rem;
+            color: #2E7D32;
+        }
+        
+        /* Token usage styles */
+        .token-usage {
+            margin: 1rem 0;
+            padding: 0.75rem;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        
+        .token-normal {
+            background-color: #e3f2fd;
+            color: #0d47a1;
+        }
+        
+        .token-high {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        
+        .token-usage strong {
+            font-size: 1.1rem;
+        }
+        
+        /* Truncation warning */
+        .truncation-warning {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: #fff3e0;
+            border-left: 4px solid #ff9800;
+            color: #e65100;
+            font-size: 0.9rem;
+            border-radius: 4px;
+        }
+        
+        .truncation-warning i {
+            margin-right: 0.5rem;
+            color: #ff9800;
+        }
+        
         .findings-list, .tickets-list {
             list-style: none;
             padding: 0;
@@ -239,6 +300,146 @@
             color: #5f6368;
         }
         
+        /* Reflection styles */
+        .reflection-cycle {
+            margin-bottom: 1rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .reflection-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background-color: #f5f0ff;
+            cursor: pointer;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .cycle-number {
+            font-weight: 600;
+            color: #673AB7;
+        }
+        
+        .reflection-content {
+            display: none;
+            padding: 1rem;
+            background-color: #fafafa;
+        }
+        
+        .reflection-cycle.expanded .reflection-content {
+            display: block;
+        }
+        
+        .reflection-cycle.expanded .expand-icon i {
+            transform: rotate(180deg);
+        }
+        
+        .expand-icon i {
+            transition: transform 0.3s ease;
+        }
+        
+        .reflection-output {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .reflection-tools {
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .tool-list {
+            list-style: none;
+            padding: 0;
+            margin: 0.5rem 0 1rem;
+        }
+        
+        .tool-item {
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background-color: #f1f8e9;
+            border-left: 3px solid #8bc34a;
+            border-radius: 4px;
+        }
+        
+        .tool-name {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #2E7D32;
+        }
+        
+        .tool-details {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        
+        .reflection-logs {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background-color: #fff8e1;
+            border-radius: 4px;
+            border-left: 3px solid #ffc107;
+        }
+        
+        .reflection-logs pre {
+            margin: 0.5rem 0 0;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: #333;
+        }
+        
+        /* Tooltip styles */
+        .tooltip-trigger {
+            position: relative;
+            margin-left: 8px;
+            cursor: help;
+        }
+        
+        .tooltip-trigger .tooltip-content {
+            visibility: hidden;
+            width: 280px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -140px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.8rem;
+            font-weight: normal;
+            line-height: 1.4;
+            pointer-events: none;
+        }
+        
+        .tooltip-trigger .tooltip-content::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #555 transparent transparent transparent;
+        }
+        
+        .tooltip-trigger:hover .tooltip-content {
+            visibility: visible;
+            opacity: 1;
+        }
+        
         /* Responsive styles */
         @media (max-width: 768px) {
             .smart-analyze-container {
@@ -287,6 +488,15 @@
                 </button>
                 <button id="analyze-button" class="button primary-button">
                     <i class="fas fa-bolt"></i> Analyze Policy
+                </button>
+                <button id="reflect-button" class="button primary-button" style="background-color: #673AB7;">
+                    <i class="fas fa-brain"></i> Reflective Analysis
+                    <span class="tooltip-trigger"><i class="fas fa-info-circle"></i>
+                        <span class="tooltip-content">
+                            Reflective Analysis uses advanced planning and reasoning but has limitations on document size.
+                            Use for complex policies under 20KB. For larger documents, use standard analysis.
+                        </span>
+                    </span>
                 </button>
             </div>
         </div>
