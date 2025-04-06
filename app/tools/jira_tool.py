@@ -10,10 +10,11 @@ def create_issue(summary: str, description: str) -> str:
     """Create an issue in Jira"""
     url = "https://shetsecure.atlassian.net/rest/api/3/issue"
     headers = {"Content-Type": "application/json"}
+
     
     data = {
         "fields": {
-            "project": {"id": "10000"},
+            "project": {"id": "10033"},
             "summary": summary,
             "description": {
                 "version": 1,
@@ -30,7 +31,7 @@ def create_issue(summary: str, description: str) -> str:
                     }
                 ]
             },
-            "issuetype": {"id": "10001"}
+            "issuetype": {"id": "10006"}
         }
     }
 
