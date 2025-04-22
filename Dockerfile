@@ -10,6 +10,7 @@ WORKDIR /complianceai
 
 COPY ./app /complianceai/app
 COPY ./complianceUI /complianceai/complianceUI
+COPY ./norms /complianceai/norms
 COPY ./uv.lock /complianceai/uv.lock
 COPY ./pyproject.toml /complianceai/pyproject.toml
 
