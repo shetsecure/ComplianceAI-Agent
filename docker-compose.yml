@@ -1,0 +1,33 @@
+services:
+  complianceai:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: complianceai-agent
+    ports:
+      - "8000:80"
+    env_file:
+      - .env
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./app:/app
+      - complianceai-data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    #restart: unless-stopped
+    networks:
+      - complianceai-network
+
+volumes:
+  complianceai-data:
+
+networks:
+  complianceai-network:
+    driver: bridge 
