@@ -25,7 +25,6 @@ RUN apt-get update && apt-get install -y curl \
 RUN pwd
 RUN ls -la
 RUN uv sync --verbose
-# RUN . .venv/bin/activate
 
 # Create non-root user
 RUN useradd -m -u 1000 appuser
@@ -46,8 +45,8 @@ ENV PYTHONPATH=/complianceai \
     PYTHONUNBUFFERED=1
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:80/health || exit 1
+# HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+#     CMD curl -f http://localhost:80/docs || exit 1
 
 # Expose port
 EXPOSE 80
