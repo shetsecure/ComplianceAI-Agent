@@ -1,19 +1,21 @@
 services:
-  complianceai:
+  # ComplianceAI Agent (Backend)
+  complianceai-backend:
     build:
-      context: .
+      context: ./backend
       dockerfile: Dockerfile
-    container_name: complianceai-agent
+    container_name: complianceai-backend
     ports:
       - "8000:80"
     env_file:
-      - .env
+      - ./backend/.env
     environment:
       - PYTHONPATH=/app
       - PYTHONUNBUFFERED=1
       - LOG_LEVEL=INFO
+      - DATABASE_URL=mysql://root:root@complianceai-db:3306/complianceai
     volumes:
-      - ./app:/app
+      - ./backend/app:/app
       - complianceai-data:/app/data
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:80/docs"]
@@ -21,12 +23,49 @@ services:
       timeout: 10s
       retries: 3
       start_period: 5s
-    #restart: unless-stopped
     networks:
       - complianceai-network
+    depends_on:
+      complianceai-db:
+        condition: service_healthy
+
+  # Frontend (UI)
+  complianceai-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: complianceai-frontend
+    ports:
+      - "8001:80"
+    networks:
+      - complianceai-network
+    depends_on:
+      complianceai-backend:
+        condition: service_started
+
+  # Database
+  complianceai-db:
+    build:
+      context: ./db
+      dockerfile: Dockerfile
+    container_name: complianceai-db
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=complianceai
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - complianceai-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
 volumes:
   complianceai-data:
+  mysql-data:
 
 networks:
   complianceai-network:

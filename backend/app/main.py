@@ -13,6 +13,8 @@ from app.agents.norm_agent import PSSIAnalyzerAgent
 from app.agents.orchestrator import ComplianceOrchestrator, ReflectComplianceOrchestrator
 
 from app.tools.jira_tool import create_issue
+from .routers import setup, auth
+from .utils.database import Base, engine, get_db
 
 
 # Create uploads directory if it doesn't exist
@@ -176,12 +178,13 @@ async def analyze_documents(pssi_id: str = Form(...), norm_name: str = Form(None
             # Try with .pdf extension if it wasn't included
             norm_path = NORMS_DIR / f"{norm_name}.pdf"
             if not norm_path.exists():
+                # Fall back to default norm
+                norm_path = NORMS_DIR / "guide_hygiene_informatique_anssi.pdf"
                 return JSONResponse(
                     status_code=404,
                     content={"detail": f"Norm file not found: {norm_name}. Using default instead."}
                 )
-                # Fall back to default norm
-                norm_path = NORMS_DIR / "guide_hygiene_informatique_anssi.pdf"
+                
         
         if not pssi_path.exists():
             return JSONResponse(
@@ -381,6 +384,13 @@ async def create_jira_ticket(data: dict = Body(...)):
     except Exception as e:
         print(f"Error creating ticket: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# Create database tables
+Base.metadata.create_all(bind=engine)
+
+# Include routers
+app.include_router(auth.router)
+app.include_router(setup.router)
 
 if __name__ == "__main__":
     import uvicorn

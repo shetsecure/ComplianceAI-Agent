@@ -14,9 +14,15 @@ COPY ./norms /complianceai/norms
 COPY ./uv.lock /complianceai/uv.lock
 COPY ./pyproject.toml /complianceai/pyproject.toml
 
+# Install system dependencies including MySQL development libraries
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    pkg-config \
+    default-libmysqlclient-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install uv and dependencies
-RUN apt-get update && apt-get install -y curl \
-    && pip install --upgrade pip \
+RUN pip install --upgrade pip \
     && pip install uv \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*

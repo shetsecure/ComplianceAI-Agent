@@ -6,6 +6,12 @@ from app.tools.jira_tool import create_issue
 
 from app.models.capture_handlers import CustomCaptureHandler
 
+#TODO: PSSI to Policy + Check if doc is really policy or not first.
+#TODO: get LLM provider from env
+#TODO: activate only the tools specified in the env
+#TODO: add more logs
+#TODO: change the UI UX
+#TODO: define healthcheck
 
 class PSSIAnalyzerAgent:
     def __init__(self, model_name: str = "deepseek-chat", temperature: float = 0):
